@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  기상 화면 — Phase A: 스누즈 결정 / Phase B: 출발 준비
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ══════════════════════════════════════════════════
+         Phase A : 기상 알람 — 스누즈 or 기상 결정
+         (헤더 없음, 화면 중앙 정렬)
+         ══════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/gc_phase_a"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gc_bg_app"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="700dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 배터리 상태 카드 -->
+            <LinearLayout
+                android:id="@+id/gc_card_battery_decision"
+                style="@style/Widget.GC.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/gc_wake_snooze_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.GC.RowValue"
+                    tools:text="✓  5분 더 가능해요" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_16"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/gc_stat_bat_current"
+                        layout="@layout/gc_item_stat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <View style="@style/Widget.GC.Divider.Vertical" />
+
+                    <include
+                        android:id="@+id/gc_stat_bat_needed"
+                        layout="@layout/gc_item_stat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <View style="@style/Widget.GC.Divider.Vertical" />
+
+                    <include
+                        android:id="@+id/gc_stat_bat_margin"
+                        layout="@layout/gc_item_stat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/gc_action_snooze"
+                style="@style/Widget.GC.Button"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/gc_gap"
+                android:text="@string/gc_action_snooze" />
+
+            <TextView
+                android:id="@+id/gc_action_wake_up"
+                style="@style/Widget.GC.Button.Filled"
+                android:layout_width="match_parent"
+                android:layout_marginTop="@dimen/gc_gap_sm"
+                android:text="@string/gc_action_wake_up" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ══════════════════════════════════════════════════
+         Phase B : 출발 준비 화면 (Figma "04 기상 B" 기반)
+         헤더 없음, 왼쪽=인사+지표+피드백, 오른쪽=시각+안내+도착
+         ══════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/gc_phase_b"
+        style="@style/Widget.GC.AppRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <include
+            android:id="@+id/gc_header_b"
+            layout="@layout/gc_view_header" />
+
+        <!-- 2열 콘텐츠 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <!-- ════════════ 왼쪽: 인사 · 요약 · 배터리 · 피드백 ════════════ -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+
+                <!-- 밤새 요약 배너 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_12"
+                    android:background="@drawable/gc_bg_tint_active"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="@dimen/gc_card_padding_h"
+                    android:paddingVertical="@dimen/gc_space_16">
+
+                    <TextView
+                        android:id="@+id/gc_wake_summary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.GC.RowValue"
+                        android:textColor="@color/informative_active"
+                        tools:text="밤새 18% 사용  ·  20°C 유지" />
+                </LinearLayout>
+
+                <!-- 배터리 카드 2개 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_gap"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        style="@style/Widget.GC.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="bottom"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/gc_wake_bat_current"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.GC.StatValue"
+                                android:textColor="@color/informative_active"
+                                tools:text="73" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/gc_space_6"
+                                android:text="%"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                android:textColor="@color/informative_active" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/gc_space_8"
+                            android:text="현재 배터리"
+                            android:textAppearance="@style/TextAppearance.GC.Caption"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        style="@style/Widget.GC.Card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_gap_sm"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="bottom"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/gc_wake_bat_overnight"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.GC.StatValue"
+                                android:textColor="@color/text_secondary"
+                                tools:text="18" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/gc_space_6"
+                                android:text="%"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/gc_space_8"
+                            android:text="밤새 사용"
+                            android:textAppearance="@style/TextAppearance.GC.Caption"
+                            android:textColor="@color/text_secondary" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 피드백 카드 -->
+                <LinearLayout
+                    style="@style/Widget.GC.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_gap_sm"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="어젯밤 어떠셨나요?"
+                        android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gc_space_16"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/gc_feedback_good"
+                            android:layout_width="0dp"
+                            android:layout_height="110dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/gc_bg_tint_active"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="😊"
+                                android:textSize="32sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/gc_space_8"
+                                android:text="좋았어요"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                android:textColor="@color/informative_active" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/gc_feedback_hot"
+                            android:layout_width="0dp"
+                            android:layout_height="110dp"
+                            android:layout_marginStart="@dimen/gc_space_12"
+                            android:layout_weight="1"
+                            android:background="@drawable/gc_bg_card"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🥵"
+                                android:textSize="32sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/gc_space_8"
+                                android:text="더웠어요"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/gc_feedback_cold"
+                            android:layout_width="0dp"
+                            android:layout_height="110dp"
+                            android:layout_marginStart="@dimen/gc_space_12"
+                            android:layout_weight="1"
+                            android:background="@drawable/gc_bg_card"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🥶"
+                                android:textSize="32sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/gc_space_8"
+                                android:text="추웠어요"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ════════════ 오른쪽: 시각 카드 · 집으로 안내 · 도착 예상 ════════════ -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/gc_gap"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- 현재 시각 카드 (일출 그라디언트) -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="260dp"
+                    android:background="@drawable/gc_bg_wake_time"
+                    android:clipToOutline="true">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/gc_wake_current_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#EFFFFFFF"
+                            android:textFontWeight="800"
+                            android:textSize="88sp"
+                            tools:text="06:28" />
+
+                        <TextView
+                            android:id="@+id/gc_wake_current_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/gc_space_8"
+                            android:textAppearance="@style/TextAppearance.GC.RowValue"
+                            android:textColor="#99FFFFFF"
+                            tools:text="2026년 11월 8일 일요일" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- 집으로 안내 버튼 -->
+                <LinearLayout
+                    android:id="@+id/gc_action_navigate_home"
+                    android:layout_width="match_parent"
+                    android:layout_height="110dp"
+                    android:layout_marginTop="@dimen/gc_gap_sm"
+                    android:background="@drawable/gc_bg_button_navigate"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="집으로 안내"
+                        android:textAppearance="@style/TextAppearance.GC.Headline"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_route"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gc_space_4"
+                        android:textAppearance="@style/TextAppearance.GC.Caption"
+                        android:textColor="#99FFFFFF"
+                        tools:text="182 km" />
+                </LinearLayout>
+
+                <!-- 집 도착 예상 카드 -->
+                <LinearLayout
+                    style="@style/Widget.GC.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_gap_sm"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="집 도착 예상"
+                        android:textAppearance="@style/TextAppearance.GC.Caption"
+                        android:textColor="@color/text_secondary" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_arrival_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.GC.RowValue"
+                        tools:text="오전 09:10" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_dest_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_space_20"
+                        android:textAppearance="@style/TextAppearance.GC.Caption"
+                        android:textColor="@color/informative_active"
+                        tools:text="도착 예상 잔량 38%" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

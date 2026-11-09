@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">굿나잇 캠프</string>
+    <string name="gc_app_name">굿나잇 캠프</string>
+
+    <!-- 공통 헤더 -->
+    <string name="gc_context_location">로딩 중..</string>
+    <string name="gc_context_gear">P</string>
+    <string name="gc_context_parked">정차 중</string>
+    <string name="gc_unit_km">km</string>
+    <string name="gc_unit_hours">시간</string>
+
+    <!-- ① 설정 -->
+    <string name="gc_setup_subtitle">오늘 밤 계획을 세울게요</string>
+    <string name="gc_setup_car_status">지금 차 상태</string>
+    <string name="gc_setup_car_status_hint">자동으로 가져와요</string>
+    <string name="gc_label_battery">배터리</string>
+    <string name="gc_label_outside">바깥</string>
+    <string name="gc_utility_mode">유틸리티 모드</string>
+    <string name="gc_on">켜짐</string>
+    <string name="gc_setup_destination_title">최근 수면 기록</string>
+    <string name="gc_setup_records_empty">아직 수면 기록이 없어요</string>
+    <string name="gc_record_delete">삭제</string>
+    <string name="gc_destination_home">집 · 마포구</string>
+    <string name="gc_destination_source">내비 즐겨찾기에서 가져옴</string>
+    <string name="gc_setup_destination_note">겨울 효율을 반영해 집까지 배터리 약 %1$d%%가 필요해요</string>
+    <string name="gc_setup_tonight">오늘 밤 설정</string>
+    <string name="gc_setup_tonight_hint">다섯 가지만 정하면 돼요</string>
+    <string name="gc_setting_wake_time">일어날 시간</string>
+    <string name="gc_setting_sunrise">일출 %1$s</string>
+    <string name="gc_setting_destination">내일 갈 곳</string>
+    <string name="gc_setting_temperature">원하는 온도</string>
+    <string name="gc_setting_reserve">여유 배터리</string>
+    <string name="gc_setting_reserve_hint">집 도착 시</string>
+    <string name="gc_setting_guests">자는 인원</string>
+    <string name="gc_setting_guests_unit">명</string>
+    <string name="gc_search_destination_hint">목적지를 검색하세요</string>
+    <string name="gc_unit_hour">시</string>
+    <string name="gc_unit_minute">분</string>
+    <string name="gc_action_cancel">취소</string>
+    <string name="gc_action_confirm">확인</string>
+    <string name="gc_action_back">뒤로</string>
+    <string name="gc_action_change">변경</string>
+    <string name="gc_action_decrease">낮추기</string>
+    <string name="gc_action_increase">올리기</string>
+    <string name="gc_action_save_schedule">일정만 저장</string>
+    <string name="gc_action_make_plan">밤 계획 만들기</string>
+
+    <!-- ② 밤 계획 -->
+    <string name="gc_plan_subtitle">오늘 밤 계획</string>
+    <string name="gc_plan_ok">계획 가능</string>
+    <string name="gc_plan_ai_badge">AI가 쓴 설명</string>
+    <string name="gc_plan_headline">%1$s로 아침까지 따뜻하게 잘 수 있어요</string>
+    <string name="gc_stat_now">지금</string>
+    <string name="gc_stat_morning">아침 잔량</string>
+    <string name="gc_stat_overnight_use">밤새 사용</string>
+    <string name="gc_stat_needed_home">집까지 필요</string>
+    <string name="gc_plan_budget">배터리 예산</string>
+    <string name="gc_plan_legend_forecast">예상 잔량</string>
+    <string name="gc_plan_legend_reserve">집에 갈 몫</string>
+    <string name="gc_plan_reserve_label">집까지 %1$d%% + 여유 %2$d%% · 이 아래는 쓰지 않아요</string>
+    <string name="gc_phase_preheat">미리 데움</string>
+    <string name="gc_phase_hold">%1$s 유지</string>
+    <string name="gc_phase_wake_heat">기상 난방</string>
+    <string name="gc_plan_care_title">밤새 자동 관리</string>
+    <string name="gc_care_ventilation">환기</string>
+    <string name="gc_care_ventilation_value">30분마다 외기 유입</string>
+    <string name="gc_care_defrost">성애제거</string>
+    <string name="gc_care_defrost_value">기상 30분 전 자동 작동</string>
+    <string name="gc_care_light">실내등</string>
+    <string name="gc_care_light_value">취침 후 자동 소등</string>
+    <string name="gc_care_screen">화면</string>
+    <string name="gc_care_screen_value">23:00에 꺼짐</string>
+    <string name="gc_action_edit">수정</string>
+    <string name="gc_action_go_to_sleep">이대로 잘게요</string>
+
+    <!-- ③ 캠핑 모드 중 -->
+    <string name="gc_camping_subtitle">캠핑 모드 진행 중</string>
+    <string name="gc_camping_status_chip">캠핑 모드 진행 중</string>
+    <string name="gc_camping_headline">%1$s로 따뜻하게 관리 중이에요</string>
+    <string name="gc_stat_until_wake">기상까지</string>
+    <string name="gc_camping_hvac">공조</string>
+    <string name="gc_camping_hvac_active">%1$s°C 유지 중</string>
+    <string name="gc_action_stop_camping">차박 종료</string>
+
+    <!-- ④ 수면 중 -->
+    <string name="gc_sleep_header">굿나잇 캠프 · 수면 중</string>
+    <string name="gc_sleep_status">%1$s 유지 중 · 잔량 %2$d%% · 계획대로 가는 중</string>
+    <string name="gc_sleep_wake_label">%1$s 기상</string>
+    <string name="gc_sleep_hint_tap">화면을 누르면 3초간 밝아져요</string>
+    <string name="gc_sleep_hint_adjust">계획에서 벗어나면 조용히 조정하고 아침에 알려드려요</string>
+
+    <!-- ④ 기상 -->
+    <string name="gc_wake_subtitle">좋은 아침이에요</string>
+    <string name="gc_wake_chip">기상 · %1$s</string>
+    <string name="gc_wake_headline">해 뜨기 %1$d분 전이에요.</string>
+    <string name="gc_wake_heating">실내를 %1$s로 데우는 중이에요</string>
+    <string name="gc_wake_sunrise">일출 %1$s · %2$s</string>
+    <string name="gc_wake_record">어젯밤 기록</string>
+    <string name="gc_stat_avg_indoor">평균 실내</string>
+    <string name="gc_stat_ventilation">환기</string>
+    <string name="gc_stat_arrival">집 도착 예상</string>
+    <string name="gc_wake_now_doing">지금 차가 하는 일</string>
+    <string name="gc_wake_light">실내등</string>
+    <string name="gc_wake_light_value">30% 밝기로 천천히</string>
+    <string name="gc_wake_window">창문</string>
+    <string name="gc_wake_window_value">2 cm 열어 환기 중</string>
+    <string name="gc_wake_seat">시트 열선</string>
+    <string name="gc_wake_seat_value">운전석 켜짐</string>
+    <string name="gc_wake_route">182 km · 약 2시간 30분</string>
+    <string name="gc_action_navigate_home">집으로 안내</string>
+    <string name="gc_action_snooze">5분만 더</string>
+    <string name="gc_wake_greeting">잘 주무셨나요?</string>
+    <string name="gc_wake_phase_a_subtitle">기상</string>
+    <string name="gc_wake_phase_b_subtitle">좋은 아침이에요</string>
+    <string name="gc_action_wake_up">일어날게요</string>
+    <string name="gc_wake_summary">밤새 %1$d%% 사용  ·  %2$s 유지  ·  환기 정상</string>
+    <string name="gc_stat_indoor_temp">실내 온도</string>
+    <string name="gc_wake_feedback_title">어젯밤 어떠셨나요?</string>
+    <string name="gc_wake_feedback_good">좋았어요</string>
+    <string name="gc_wake_feedback_hot">더웠어요</string>
+    <string name="gc_wake_feedback_cold">추웠어요</string>
+
+    <!-- 기상 A — 배터리 비교 카드 -->
+    <string name="gc_wake_bat_current_label">현재 배터리</string>
+    <string name="gc_wake_bat_needed_label">집까지 필요</string>
+    <string name="gc_wake_bat_margin_label">여유 배터리</string>
+    <string name="gc_wake_can_snooze">✓  5분 더 주무셔도 괜찮아요</string>
+    <string name="gc_wake_bat_low_warning">⚠  배터리 여유가 적어요</string>
+</resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SaBu 지표 셀: 큰 숫자 + 작은 단위, 아래에 라벨
+  <include> 할 때 layout_width="0dp" layout_weight="1" 로 칸을 나누고,
+  값은 코드에서 gc_stat_value / gc_stat_unit / gc_stat_label 에 넣습니다.
+  값 색(초록·빨강)은 코드에서 setTextColor 로 바꿉니다.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:baselineAlignedChildIndex="0"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/gc_stat_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.GC.StatValue"
+            tools:text="85" />
+
+        <TextView
+            android:id="@+id/gc_stat_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/gc_space_6"
+            android:textAppearance="@style/TextAppearance.GC.StatUnit"
+            tools:text="% or °C"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gc_space_6"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/gc_stat_icon"
+            android:layout_width="@dimen/gc_icon_xs"
+            android:layout_height="@dimen/gc_icon_xs"
+            android:layout_marginEnd="@dimen/gc_space_8"
+            android:importantForAccessibility="no"
+            android:visibility="gone"
+            app:tint="@color/text_tertiary"
+            tools:src="@drawable/gc_ic_battery"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/gc_stat_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.GC.Label"
+            tools:text="@string/gc_label_battery" />
+    </LinearLayout>
+</LinearLayout>

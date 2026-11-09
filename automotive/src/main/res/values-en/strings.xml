@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Goodnight Camp · English strings (values-en)
+  Keys and format arguments match values/strings.xml (Korean, default).
+-->
+<resources>
+    <string name="app_name">Goodnight Camp</string>
+    <string name="gc_app_name">Goodnight Camp</string>
+
+    <!-- Common header -->
+    <string name="gc_context_location">Loading…</string>
+    <string name="gc_context_gear">P</string>
+    <string name="gc_context_parked">Parked</string>
+    <string name="gc_unit_km">km</string>
+    <string name="gc_unit_hours">hrs</string>
+
+    <!-- ① Setup -->
+    <string name="gc_setup_subtitle">Let\'s plan tonight</string>
+    <string name="gc_setup_car_status">Car right now</string>
+    <string name="gc_setup_car_status_hint">Updated automatically</string>
+    <string name="gc_label_battery">Battery</string>
+    <string name="gc_label_outside">Outside</string>
+    <string name="gc_utility_mode">Utility mode</string>
+    <string name="gc_on">On</string>
+    <string name="gc_setup_destination_title">Recent destinations</string>
+    <string name="gc_destination_home">Home · Mapo-gu</string>
+    <string name="gc_destination_source">From your navigation favorites</string>
+    <string name="gc_setup_destination_note">About %1$d%% battery is needed to get home, adjusted for winter efficiency</string>
+    <string name="gc_setup_tonight">Tonight\'s settings</string>
+    <string name="gc_setup_tonight_hint">Just five things to set</string>
+    <string name="gc_setting_wake_time">Wake-up time</string>
+    <string name="gc_setting_sunrise">Sunrise %1$s</string>
+    <string name="gc_setting_destination">Destination</string>
+    <string name="gc_setting_temperature">Target temperature</string>
+    <string name="gc_setting_reserve">Spare battery</string>
+    <string name="gc_setting_reserve_hint">on arrival</string>
+    <string name="gc_setting_guests">Sleeping guests</string>
+    <string name="gc_setting_guests_unit">ppl</string>
+    <string name="gc_search_destination_hint">Search for a destination</string>
+    <string name="gc_unit_hour">hr</string>
+    <string name="gc_unit_minute">min</string>
+    <string name="gc_action_cancel">Cancel</string>
+    <string name="gc_action_confirm">Confirm</string>
+    <string name="gc_action_change">Change</string>
+    <string name="gc_action_decrease">Decrease</string>
+    <string name="gc_action_increase">Increase</string>
+    <string name="gc_action_save_schedule">Save schedule only</string>
+    <string name="gc_action_make_plan">Create night plan</string>
+
+    <!-- ② Night plan -->
+    <string name="gc_plan_subtitle">Tonight\'s plan</string>
+    <string name="gc_plan_ok">Plan ready</string>
+    <string name="gc_plan_ai_badge">Written by AI</string>
+    <string name="gc_plan_headline">You can stay warm at %1$s until morning</string>
+    <string name="gc_stat_now">Now</string>
+    <string name="gc_stat_morning">By morning</string>
+    <string name="gc_stat_overnight_use">Used overnight</string>
+    <string name="gc_stat_needed_home">Needed for home</string>
+    <string name="gc_plan_budget">Battery budget</string>
+    <string name="gc_plan_legend_forecast">Expected charge</string>
+    <string name="gc_plan_legend_reserve">Reserved for home</string>
+    <string name="gc_plan_reserve_label">Home %1$d%% + spare %2$d%% · never used below this line</string>
+    <string name="gc_phase_preheat">Pre-heat</string>
+    <string name="gc_phase_hold">Hold %1$s</string>
+    <string name="gc_phase_wake_heat">Wake-up heat</string>
+    <string name="gc_plan_care_title">Auto Night Care</string>
+    <string name="gc_care_ventilation">Ventilation</string>
+    <string name="gc_care_ventilation_value">Fresh air every 30 min</string>
+    <string name="gc_care_defrost">Defrost</string>
+    <string name="gc_care_defrost_value">Auto 30 min before wake-up</string>
+    <string name="gc_care_light">Interior light</string>
+    <string name="gc_care_light_value">Auto off at sleep</string>
+    <string name="gc_care_screen">Screen</string>
+    <string name="gc_care_screen_value">Off at 23:00</string>
+    <string name="gc_action_edit">Edit</string>
+    <string name="gc_action_go_to_sleep">Good night</string>
+
+    <!-- ③ Sleeping -->
+    <string name="gc_sleep_header">Goodnight Camp · Sleeping</string>
+    <string name="gc_sleep_status">Holding %1$s · %2$d%% left · On plan</string>
+    <string name="gc_sleep_wake_label">Wake %1$s</string>
+    <string name="gc_sleep_hint_tap">Tap the screen to brighten it for 3 seconds</string>
+    <string name="gc_sleep_hint_adjust">If anything drifts from the plan, I\'ll adjust quietly and tell you in the morning</string>
+
+    <!-- ④ Wake-up -->
+    <string name="gc_wake_subtitle">Good morning</string>
+    <string name="gc_wake_chip">Wake-up · %1$s</string>
+    <string name="gc_wake_headline">%1$d minutes until sunrise.</string>
+    <string name="gc_wake_heating">Warming the cabin to %1$s</string>
+    <string name="gc_wake_sunrise">Sunrise %1$s · %2$s</string>
+    <string name="gc_wake_record">Last night</string>
+    <string name="gc_stat_avg_indoor">Avg. cabin</string>
+    <string name="gc_stat_ventilation">Ventilation</string>
+    <string name="gc_stat_arrival">Charge at home</string>
+    <string name="gc_wake_now_doing">What the car is doing</string>
+    <string name="gc_wake_light">Cabin light</string>
+    <string name="gc_wake_light_value" formatted="false">Slowly rising to 30%</string>
+    <string name="gc_wake_window">Window</string>
+    <string name="gc_wake_window_value">Open 2 cm for fresh air</string>
+    <string name="gc_wake_seat">Seat heater</string>
+    <string name="gc_wake_seat_value">Driver seat on</string>
+    <string name="gc_wake_route">182 km · about 2 hr 30 min</string>
+    <string name="gc_action_navigate_home">Navigate home</string>
+    <string name="gc_action_snooze">5 more minutes</string>
+</resources>

@@ -1,0 +1,17 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Claude Code 로컬 메모리
+.claude/
+
+# 불필요한 로컬 파일
+.Rhistory
+*.log

@@ -1,0 +1,191 @@
+package com.example.pleostest.global;
+
+import android.view.View;
+import android.widget.TextView;
+
+import com.example.pleostest.R;
+import com.example.pleostest.util.GNCLog;
+
+import java.util.Calendar;
+import java.util.Locale;
+
+
+public class GlobalFunction {
+
+    // ────────────────────────────────────────────────────────────────
+    // 배터리 예산 데이터 클래스
+    // ────────────────────────────────────────────────────────────────
+
+    public static class BatteryBudgetResult {
+        public final int currentPct;
+        public final int morningPct;
+        public final int overnightUsePct;
+        public final int neededForHomePct;
+        public final int reservePct;
+        public final boolean isViable;
+        public final int startTimeMin;
+        public final int wakeTimeMin;
+
+        public BatteryBudgetResult(int currentPct, int morningPct, int overnightUsePct,
+                                   int neededForHomePct, int reservePct, boolean isViable,
+                                   int startTimeMin, int wakeTimeMin) {
+            this.currentPct = currentPct;
+            this.morningPct = morningPct;
+            this.overnightUsePct = overnightUsePct;
+            this.neededForHomePct = neededForHomePct;
+            this.reservePct = reservePct;
+            this.isViable = isViable;
+            this.startTimeMin = startTimeMin;
+            this.wakeTimeMin = wakeTimeMin;
+        }
+
+        public int getCurrentPct() { return currentPct; }
+        public int getMorningPct() { return morningPct; }
+        public int getOvernightUsePct() { return overnightUsePct; }
+        public int getNeededForHomePct() { return neededForHomePct; }
+        public int getReservePct() { return reservePct; }
+        public boolean getIsViable() { return isViable; }
+        public int getStartTimeMin() { return startTimeMin; }
+        public int getWakeTimeMin() { return wakeTimeMin; }
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // UI 헬퍼
+    // ────────────────────────────────────────────────────────────────
+
+    /** gc_item_stat.xml을 include한 뷰에 값·단위·라벨을 한 번에 세팅 */
+    public static void setStatItem(View statView, String value, String unit, String label) {
+        ((TextView) statView.findViewById(R.id.gc_stat_value)).setText(value);
+        ((TextView) statView.findViewById(R.id.gc_stat_unit)).setText(unit);
+        ((TextView) statView.findViewById(R.id.gc_stat_label)).setText(label);
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 시간 변환
+    // ────────────────────────────────────────────────────────────────
+
+    /** "HH:mm" → 분 */
+    public static int hhmmToMinutes(String hhmm) {
+        String[] parts = hhmm.split(":");
+        return Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+    }
+
+    /** 분 → "HH:mm" */
+    public static String minutesToHHmm(int totalMinutes) {
+        return String.format(Locale.getDefault(), "%02d:%02d",
+                (totalMinutes / 60) % 24, totalMinutes % 60);
+    }
+
+    /** 지금부터 GlobalVariables.wakeTime까지 남은 시간(단위: 시) */
+    public static double overnightHours() {
+        int wakeMin = hhmmToMinutes(GlobalVariables.wakeTime);
+        Calendar cal = Calendar.getInstance();
+        int nowMin = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
+        int diff = wakeMin > nowMin ? wakeMin - nowMin : (24 * 60 - nowMin + wakeMin);
+        return diff / 60.0;
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // GlobalVariables 파싱
+    // ────────────────────────────────────────────────────────────────
+
+    /** curBattery 문자열에서 숫자 부분만 추출 (예: "85%" → "85", "-" → "-") */
+    public static String batteryValueStr() {
+        StringBuilder sb = new StringBuilder();
+        for (char c : GlobalVariables.curBattery.toCharArray()) {
+            if (Character.isDigit(c)) sb.append(c);
+        }
+        return sb.length() > 0 ? sb.toString() : "-";
+    }
+
+    /** curBattery 문자열에서 정수 추출 — 파싱 실패 시 기본값 80 반환 */
+    public static int batteryPct() {
+        String digits = batteryValueStr();
+        try {
+            return digits.equals("-") ? 80 : Integer.parseInt(digits);
+        } catch (NumberFormatException e) {
+            return 80;
+        }
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 배터리 예산 계산
+    // ────────────────────────────────────────────────────────────────
+
+    /**
+     * GlobalVariables에서 직접 읽어 밤새 배터리 소비 예산을 계산합니다.
+     *
+     * 공조 소비 모델:
+     *   hvacKw = 0.3(대기) + (온도차/10) * 0.6 - (인원-1) * 0.08
+     * 귀가 필요 에너지:
+     *   neededKwh = destinationKm / efficiencyKmPerKwh
+     */
+    public static BatteryBudgetResult calculateBatteryBudget() {
+        int currentPct = batteryPct();
+        double capacityKwh = Math.max(GlobalVariables.batteryCapacityWh / 1000.0, 1.0);
+        double overnightHrs = overnightHours();
+        float outsideCelsius = temperatureCelsius();
+
+        GNCLog.i("[GlobalFunction] 배터리 예산 계산 시작 — battery=" + currentPct + "%, capacity=" + capacityKwh + "kWh, outside=" + outsideCelsius + "°C, setTemp=" + GlobalVariables.setTemperatureDeg + "°C, guests=" + GlobalVariables.guestCount + ", dest=" + GlobalVariables.destinationDistanceKm + "km, efficiency=" + GlobalVariables.efficiencyKmPerKwh + "km/kWh, overnightHrs=" + overnightHrs);
+
+        // 공조 소비 kW
+        double tempDiff = Math.max(GlobalVariables.setTemperatureDeg - outsideCelsius, 0.0);
+        double hvacKw = 0.3 + (tempDiff / 10.0) * 0.6 - (GlobalVariables.guestCount - 1) * 0.08;
+        hvacKw = Math.min(Math.max(hvacKw, 0.2), 4.0);
+        GNCLog.d("[GlobalFunction] HVAC 소비 — tempDiff=" + tempDiff + "°C, hvacKw=" + String.format(Locale.US, "%.3f", hvacKw) + "kW");
+
+        // 밤새 소비 %
+        double overnightKwh = hvacKw * overnightHrs;
+        int overnightPct = (int) Math.min(Math.max((overnightKwh / capacityKwh) * 100, 0), 100);
+        int morningPct = Math.max(currentPct - overnightPct, 0);
+        GNCLog.d("[GlobalFunction] 밤새 소비 — overnightKwh=" + String.format(Locale.US, "%.2f", overnightKwh) + "kWh, overnightPct=" + overnightPct + "%, morningPct=" + morningPct + "%");
+
+        // 귀가 필요 %
+        double eff = Math.max(GlobalVariables.efficiencyKmPerKwh, 1.0);
+        double neededKwh = GlobalVariables.destinationDistanceKm / eff;
+        int neededForHomePct = (int) Math.min(Math.max((neededKwh / capacityKwh) * 100, 0), 100);
+        int reservePct = Math.min(neededForHomePct + GlobalVariables.marginBatteryPct, 100);
+        GNCLog.d("[GlobalFunction] 귀가 필요 — neededKwh=" + String.format(Locale.US, "%.2f", neededKwh) + "kWh, neededForHomePct=" + neededForHomePct + "%, margin=" + GlobalVariables.marginBatteryPct + "%, reservePct=" + reservePct + "%");
+
+        Calendar cal = Calendar.getInstance();
+        int startMin = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
+        int wakeMin = hhmmToMinutes(GlobalVariables.wakeTime);
+        boolean viable = morningPct >= reservePct;
+        GNCLog.i("[GlobalFunction] 예산 계산 완료 — morningPct=" + morningPct + "%, reservePct=" + reservePct + "%, viable=" + viable);
+
+        return new BatteryBudgetResult(
+                currentPct,
+                morningPct,
+                overnightPct,
+                neededForHomePct,
+                reservePct,
+                viable,
+                startMin,
+                wakeMin
+        );
+    }
+
+    /** outTemperature 문자열에서 float 값 반환 — 파싱 실패 시 기본값 15.0 반환 */
+    public static float temperatureCelsius() {
+        try {
+            return Float.parseFloat(temperatureValueStr());
+        } catch (NumberFormatException e) {
+            return 15.0f;
+        }
+    }
+
+    /** outTemperature 문자열에서 숫자(+마이너스 부호) 추출 (예: "-3°C" → "-3") */
+    public static String temperatureValueStr() {
+        StringBuilder sb = new StringBuilder();
+        boolean hasDigit = false;
+        for (char c : GlobalVariables.outTemperature.toCharArray()) {
+            if (Character.isDigit(c)) {
+                sb.append(c);
+                hasDigit = true;
+            } else if (c == '-' && sb.length() == 0) {
+                sb.append(c);
+            }
+        }
+        return hasDigit ? sb.toString() : "-";
+    }
+}

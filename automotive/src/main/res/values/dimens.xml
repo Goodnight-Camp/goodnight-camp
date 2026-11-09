@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  굿나잇 캠프 치수 · 1920x1080 · Connect-L 12.9" (app area 1274x855) — base / smallest
+  scale 0.75 (2560 기준값 × 0.75)
+  Pleos 디스플레이 가이드 기준 앱 영역에 맞춘 값입니다.
+  w2000dp / w2500dp 한정자는 화면 밀도가 1.0(mdpi)이라는 가정입니다.
+  실차 밀도가 다르면 한정자 폴더 이름을 실제 dp 너비에 맞게 바꿔 주세요.
+-->
+<resources>
+    <dimen name="gc_app_padding_h">36dp</dimen>
+    <dimen name="gc_app_padding_v">30dp</dimen>
+    <dimen name="gc_gap">24dp</dimen>
+    <dimen name="gc_gap_sm">15dp</dimen>
+    <dimen name="gc_app_radius">24dp</dimen>
+    <dimen name="gc_card_radius">24dp</dimen>
+    <dimen name="gc_card_padding_h">30dp</dimen>
+    <dimen name="gc_card_padding_v">27dp</dimen>
+    <dimen name="gc_card_stroke">2dp</dimen>
+    <dimen name="gc_card_elevation">2dp</dimen>
+    <dimen name="gc_card_gap">21dp</dimen>
+    <dimen name="gc_button_height">88dp</dimen>
+    <dimen name="gc_button_radius">24dp</dimen>
+    <dimen name="gc_button_padding_h">30dp</dimen>
+    <dimen name="gc_icon_button">60dp</dimen>
+    <dimen name="gc_icon_button_radius">18dp</dimen>
+    <dimen name="gc_icon_box">60dp</dimen>
+    <dimen name="gc_icon_box_sm">54dp</dimen>
+    <dimen name="gc_icon_box_xs">42dp</dimen>
+    <dimen name="gc_icon_box_radius">18dp</dimen>
+    <dimen name="gc_icon_lg">30dp</dimen>
+    <dimen name="gc_icon_md">27dp</dimen>
+    <dimen name="gc_icon_sm">21dp</dimen>
+    <dimen name="gc_icon_xs">18dp</dimen>
+    <dimen name="gc_chip_radius">75dp</dimen>
+    <dimen name="gc_pill_radius">75dp</dimen>
+    <dimen name="gc_dot">10dp</dimen>
+    <dimen name="gc_gear_badge">30dp</dimen>
+    <dimen name="gc_gear_badge_radius">8dp</dimen>
+    <dimen name="gc_divider">2dp</dimen>
+    <dimen name="gc_stat_divider_height">54dp</dimen>
+    <dimen name="gc_segment_width">84dp</dimen>
+    <dimen name="gc_segment_height">51dp</dimen>
+    <dimen name="gc_segment_radius">15dp</dimen>
+    <dimen name="gc_segment_track_radius">18dp</dimen>
+    <dimen name="gc_note_radius">15dp</dimen>
+    <dimen name="gc_phase_radius">12dp</dimen>
+    <dimen name="gc_phase_side_width">135dp</dimen>
+    <dimen name="gc_left_column">450dp</dimen>
+    <dimen name="gc_right_column">490dp</dimen>
+    <dimen name="gc_wake_right_column">420dp</dimen>
+    <dimen name="gc_chart_height">248dp</dimen>
+    <dimen name="gc_sunrise_width">390dp</dimen>
+    <dimen name="gc_sunrise_height">112dp</dimen>
+    <dimen name="gc_sunrise_radius">21dp</dimen>
+    <dimen name="gc_switch_width">60dp</dimen>
+    <dimen name="gc_switch_height">36dp</dimen>
+    <dimen name="gc_sleep_progress_width">540dp</dimen>
+    <dimen name="gc_sleep_progress_height">4dp</dimen>
+    <dimen name="gc_space_2">2dp</dimen>
+    <dimen name="gc_space_4">3dp</dimen>
+    <dimen name="gc_space_6">4dp</dimen>
+    <dimen name="gc_space_8">6dp</dimen>
+    <dimen name="gc_space_10">8dp</dimen>
+    <dimen name="gc_space_12">9dp</dimen>
+    <dimen name="gc_space_14">10dp</dimen>
+    <dimen name="gc_space_16">12dp</dimen>
+    <dimen name="gc_space_18">14dp</dimen>
+    <dimen name="gc_space_20">15dp</dimen>
+    <dimen name="gc_space_22">16dp</dimen>
+    <dimen name="gc_space_24">18dp</dimen>
+    <dimen name="gc_space_28">21dp</dimen>
+    <dimen name="gc_space_30">22dp</dimen>
+    <dimen name="gc_space_32">24dp</dimen>
+    <dimen name="gc_space_40">30dp</dimen>
+    <dimen name="gc_space_48">36dp</dimen>
+    <dimen name="gc_space_56">42dp</dimen>
+    <dimen name="gc_space_96">72dp</dimen>
+    <dimen name="gc_text_headline">46sp</dimen>
+    <dimen name="gc_text_display">50sp</dimen>
+    <dimen name="gc_text_title_lg">40sp</dimen>
+    <dimen name="gc_text_title">36sp</dimen>
+    <dimen name="gc_text_title_md">32sp</dimen>
+    <dimen name="gc_text_title_sm">28sp</dimen>
+    <dimen name="gc_text_body_lg">26sp</dimen>
+    <dimen name="gc_text_body">25sp</dimen>
+    <dimen name="gc_text_body_sm">24sp</dimen>
+    <dimen name="gc_text_label">22sp</dimen>
+    <dimen name="gc_text_caption">20sp</dimen>
+    <dimen name="gc_text_caption_sm">18sp</dimen>
+    <dimen name="gc_text_distance">54sp</dimen>
+    <dimen name="gc_text_sleep_clock">165sp</dimen>
+</resources>

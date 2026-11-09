@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  텍스트·위젯 스타일
+  타입 스케일은 Pleos Typography(Headline 48~60, Title 32~40, Body 26~30, Label 20~24)를 따르고,
+  카드·지표 구성은 SaBu 대시보드 스타일을 따릅니다.
+-->
+<resources>
+
+    <!-- ===== Text ===== -->
+    <style name="TextAppearance.GC" parent="">
+        <item name="android:fontFamily">@font/gc_asta_sans</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.GC.AppTitle">
+        <item name="android:textSize">@dimen/gc_text_title</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.GC.Subtitle">
+        <item name="android:textSize">@dimen/gc_text_body_sm</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+    <style name="TextAppearance.GC.Headline">
+        <item name="android:textSize">@dimen/gc_text_headline</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.GC.HeadlineMd">
+        <item name="android:textSize">@dimen/gc_text_title_lg</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.GC.CardTitle">
+        <item name="android:textSize">@dimen/gc_text_title_sm</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.GC.CardHint">
+        <item name="android:textSize">@dimen/gc_text_caption</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textColor">@color/text_quaternary</item>
+    </style>
+    <style name="TextAppearance.GC.StatValue">
+        <item name="android:textSize">@dimen/gc_text_display</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.GC.StatUnit">
+        <item name="android:textSize">@dimen/gc_text_body</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.GC.Label">
+        <item name="android:textSize">@dimen/gc_text_label</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+    <style name="TextAppearance.GC.LabelLg">
+        <item name="android:textSize">@dimen/gc_text_body_sm</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+    <style name="TextAppearance.GC.SettingValue">
+        <item name="android:textSize">@dimen/gc_text_title_lg</item>
+        <item name="android:textFontWeight">800</item>
+    </style>
+    <style name="TextAppearance.GC.RowValue">
+        <item name="android:textSize">@dimen/gc_text_title_sm</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.GC.RowValueSm">
+        <item name="android:textSize">@dimen/gc_text_body_lg</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.GC.Body">
+        <item name="android:textSize">@dimen/gc_text_label</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    <style name="TextAppearance.GC.Caption">
+        <item name="android:textSize">@dimen/gc_text_caption</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+    <style name="TextAppearance.GC.Chip">
+        <item name="android:textSize">@dimen/gc_text_label</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.GC.Button">
+        <item name="android:textSize">@dimen/gc_text_title_sm</item>
+        <item name="android:textFontWeight">700</item>
+    </style>
+    <style name="TextAppearance.GC.Button.Filled">
+        <item name="android:textColor">@color/text_on_filled</item>
+    </style>
+    <style name="TextAppearance.GC.Sleep">
+        <item name="android:textColor">@color/sleep_text</item>
+        <item name="android:textSize">@dimen/gc_text_body_sm</item>
+        <item name="android:textFontWeight">500</item>
+    </style>
+    <style name="TextAppearance.GC.Sleep.Clock">
+        <item name="android:textSize">@dimen/gc_text_sleep_clock</item>
+        <item name="android:textFontWeight">300</item>
+    </style>
+    <style name="TextAppearance.GC.Sleep.Status">
+        <item name="android:textSize">@dimen/gc_text_title_sm</item>
+    </style>
+    <style name="TextAppearance.GC.Sleep.Dim">
+        <item name="android:textColor">@color/sleep_text_dim</item>
+        <item name="android:textSize">@dimen/gc_text_label</item>
+    </style>
+
+    <!-- ===== Layout widgets ===== -->
+    <style name="Widget.GC" parent="" />
+
+    <!-- 앱 영역 루트: Pleos application 영역 안을 채움 -->
+    <style name="Widget.GC.AppRoot">
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/gc_bg_app</item>
+        <item name="android:paddingStart">@dimen/gc_app_padding_h</item>
+        <item name="android:paddingEnd">@dimen/gc_app_padding_h</item>
+        <item name="android:paddingTop">@dimen/gc_app_padding_v</item>
+        <item name="android:paddingBottom">@dimen/gc_app_padding_v</item>
+    </style>
+
+    <!-- SaBu 카드: 흰 면 + 얇은 테두리 + 32 라운드 -->
+    <style name="Widget.GC.Card">
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/gc_bg_card</item>
+        <item name="android:paddingStart">@dimen/gc_card_padding_h</item>
+        <item name="android:paddingEnd">@dimen/gc_card_padding_h</item>
+        <item name="android:paddingTop">@dimen/gc_card_padding_v</item>
+        <item name="android:paddingBottom">@dimen/gc_card_padding_v</item>
+        <item name="android:elevation">@dimen/gc_card_elevation</item>
+    </style>
+
+    <!-- Pleos ivi_basic_button Large (100 높이, 32 라운드) -->
+    <style name="Widget.GC.Button">
+        <item name="android:layout_height">@dimen/gc_button_height</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">@dimen/gc_button_padding_h</item>
+        <item name="android:paddingEnd">@dimen/gc_button_padding_h</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">@drawable/gc_bg_button_basic</item>
+        <item name="android:textAppearance">@style/TextAppearance.GC.Button</item>
+        <item name="android:drawablePadding">@dimen/gc_space_14</item>
+    </style>
+    <style name="Widget.GC.Button.Filled">
+        <item name="android:background">@drawable/gc_bg_button_filled</item>
+        <item name="android:textAppearance">@style/TextAppearance.GC.Button.Filled</item>
+    </style>
+    <!-- 작은 버튼 (설정 행의 "변경") -->
+    <style name="Widget.GC.Button.Small">
+        <item name="android:layout_height">@dimen/gc_icon_button</item>
+        <item name="android:background">@drawable/gc_bg_icon_button</item>
+    </style>
+
+    <!-- 스테퍼 −/+ 버튼 (80×80, 24 라운드) -->
+    <style name="Widget.GC.IconButton">
+        <item name="android:layout_width">@dimen/gc_icon_button</item>
+        <item name="android:layout_height">@dimen/gc_icon_button</item>
+        <item name="android:background">@drawable/gc_bg_icon_button</item>
+        <item name="android:padding">@dimen/gc_space_22</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="tint">@color/text_primary</item>
+    </style>
+
+    <!-- 아이콘 박스 (80×80 회색 / 보라 틴트) -->
+    <style name="Widget.GC.IconBox">
+        <item name="android:layout_width">@dimen/gc_icon_box</item>
+        <item name="android:layout_height">@dimen/gc_icon_box</item>
+        <item name="android:background">@drawable/gc_bg_icon_box</item>
+        <item name="android:padding">@dimen/gc_space_20</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="tint">@color/text_primary</item>
+    </style>
+    <style name="Widget.GC.IconBox.Night">
+        <item name="android:background">@drawable/gc_bg_icon_box_night</item>
+        <item name="tint">@color/informative_night</item>
+    </style>
+    <style name="Widget.GC.IconBox.Small">
+        <item name="android:layout_width">@dimen/gc_icon_box_sm</item>
+        <item name="android:layout_height">@dimen/gc_icon_box_sm</item>
+        <item name="android:padding">@dimen/gc_space_18</item>
+    </style>
+
+    <!-- 칩 (계획 가능 / AI / 기상) -->
+    <style name="Widget.GC.Chip">
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">@dimen/gc_space_18</item>
+        <item name="android:paddingEnd">@dimen/gc_space_20</item>
+        <item name="android:paddingTop">@dimen/gc_space_8</item>
+        <item name="android:paddingBottom">@dimen/gc_space_8</item>
+    </style>
+
+    <!-- 구분선 -->
+    <style name="Widget.GC.Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/gc_divider</item>
+        <item name="android:background">@color/divider_primary</item>
+    </style>
+    <style name="Widget.GC.Divider.Vertical">
+        <item name="android:layout_width">@dimen/gc_divider</item>
+        <item name="android:layout_height">@dimen/gc_stat_divider_height</item>
+    </style>
+
+    <!-- Pleos ivi_switch Medium (80×48) -->
+    <style name="Widget.GC.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="trackTint">@color/gc_switch_track</item>
+        <item name="thumbTint">@color/switch_knob</item>
+        <item name="trackDecorationTint">@android:color/transparent</item>
+    </style>
+</resources>

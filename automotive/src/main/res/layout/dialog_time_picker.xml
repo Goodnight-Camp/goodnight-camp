@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="480dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/gc_bg_card"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/gc_card_padding_h"
+    android:paddingVertical="@dimen/gc_card_padding_v">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gc_setting_wake_time"
+        android:textAppearance="@style/TextAppearance.GC.CardTitle"
+        android:layout_marginBottom="@dimen/gc_space_24" />
+
+    <!-- Hour picker : Minute picker -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <NumberPicker
+            android:id="@+id/gc_picker_hour"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=":"
+            android:textAppearance="@style/TextAppearance.GC.SettingValue"
+            android:paddingHorizontal="@dimen/gc_space_16" />
+
+        <NumberPicker
+            android:id="@+id/gc_picker_minute"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <!-- Labels -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/gc_space_6">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/gc_unit_hour"
+            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:paddingHorizontal="@dimen/gc_space_16" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/gc_unit_minute"
+            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gc_divider"
+        android:background="@color/divider_primary"
+        android:layout_marginTop="@dimen/gc_space_24"
+        android:layout_marginBottom="@dimen/gc_space_16" />
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/gc_time_picker_cancel"
+            style="@style/Widget.GC.Button"
+            android:layout_width="wrap_content"
+            android:text="@string/gc_action_cancel"
+            android:layout_marginEnd="@dimen/gc_space_12" />
+
+        <TextView
+            android:id="@+id/gc_time_picker_confirm"
+            style="@style/Widget.GC.Button.Filled"
+            android:layout_width="wrap_content"
+            android:text="@string/gc_action_confirm" />
+
+    </LinearLayout>
+
+</LinearLayout>

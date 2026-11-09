@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ② 밤 계획 · Figma "GC/02 밤 계획"
+  위: 계획 요약 카드(상태 칩, AI 문장, 지표 4개)
+  아래 왼쪽: 배터리 예산 그래프 + 난방 단계 바
+  아래 오른쪽: 밤사이 차가 맡는 일 4개 + 하단 버튼
+
+  그래프(gc_battery_chart)는 커스텀 뷰입니다. XML만으로는 그릴 수 없어서
+  com.goodnightcamp.ui.BatteryBudgetChartView 를 코드로 구현해야 합니다.
+  (예상 잔량 선 = informative_night, 집에 갈 몫 띠 = tint_negative + informative_negative 선)
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.GC.AppRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.NightPlanFragment">
+
+    <include
+        android:id="@+id/gc_header"
+        layout="@layout/gc_view_header" />
+
+    <!-- ===== 계획 요약 ===== -->
+    <LinearLayout
+        android:id="@+id/gc_card_plan_summary"
+        style="@style/Widget.GC.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gc_gap">
+
+        <!-- 생성형 AI가 쓰는 유일한 문장 -->
+        <TextView
+            android:id="@+id/gc_plan_headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_24"
+            android:textAppearance="@style/TextAppearance.GC.HeadlineMd"
+            tools:text="20°C로 아침까지 따뜻하게 잘 수 있어요" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_24"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/gc_stat_now"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <View style="@style/Widget.GC.Divider.Vertical" />
+
+            <include
+                android:id="@+id/gc_stat_morning"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <View style="@style/Widget.GC.Divider.Vertical" />
+
+            <include
+                android:id="@+id/gc_stat_overnight_use"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <View style="@style/Widget.GC.Divider.Vertical" />
+
+            <include
+                android:id="@+id/gc_stat_needed_home"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/gc_gap"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <!-- ===== 배터리 예산 ===== -->
+        <LinearLayout
+            android:id="@+id/gc_card_budget"
+            style="@style/Widget.GC.Card"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/gc_plan_budget"
+                    android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                <View
+                    android:layout_width="@dimen/gc_space_24"
+                    android:layout_height="@dimen/gc_space_12"
+                    android:background="@color/informative_night" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_8"
+                    android:text="@string/gc_plan_legend_forecast"
+                    android:textAppearance="@style/TextAppearance.GC.Caption" />
+
+                <View
+                    android:layout_width="@dimen/gc_space_24"
+                    android:layout_height="@dimen/gc_space_12"
+                    android:layout_marginStart="@dimen/gc_space_24"
+                    android:background="@color/informative_negative" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_8"
+                    android:text="@string/gc_plan_legend_reserve"
+                    android:textAppearance="@style/TextAppearance.GC.Caption" />
+            </LinearLayout>
+
+            <com.example.pleostest.ui.BatteryBudgetChartView
+                android:id="@+id/gc_battery_chart"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/gc_space_20"
+                android:layout_weight="1"
+                android:contentDescription="@string/gc_plan_budget" />
+
+        </LinearLayout>
+
+        <!-- ===== 밤사이 차가 맡아요 ===== -->
+        <LinearLayout
+            android:layout_width="@dimen/gc_right_column"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/gc_gap"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/gc_card_care"
+                style="@style/Widget.GC.Card"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingTop="@dimen/gc_space_24"
+                android:paddingBottom="@dimen/gc_space_16">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/gc_space_8"
+                    android:text="@string/gc_plan_care_title"
+                    android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                <!-- 환기 -->
+                <LinearLayout
+                    android:id="@+id/gc_care_ventilation_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingTop="@dimen/gc_space_12"
+                    android:paddingBottom="@dimen/gc_space_12">
+
+                    <ImageView
+                        style="@style/Widget.GC.IconBox.Small"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_wind" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_space_24"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_ventilation"
+                            android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                        <TextView
+                            android:id="@+id/gc_care_ventilation_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_ventilation_value"
+                            android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/gc_care_ventilation_check"
+                        android:layout_width="@dimen/gc_icon_md"
+                        android:layout_height="@dimen/gc_icon_md"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_check"
+                        app:tint="@color/informative_active" />
+                </LinearLayout>
+
+                <View style="@style/Widget.GC.Divider" />
+
+                <!-- 성애제거 -->
+                <LinearLayout
+                    android:id="@+id/gc_care_defrost_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingTop="@dimen/gc_space_12"
+                    android:paddingBottom="@dimen/gc_space_12">
+
+                    <ImageView
+                        style="@style/Widget.GC.IconBox.Small"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_thermometer" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_space_24"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_defrost"
+                            android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                        <TextView
+                            android:id="@+id/gc_care_defrost_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_defrost_value"
+                            android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/gc_care_defrost_check"
+                        android:layout_width="@dimen/gc_icon_md"
+                        android:layout_height="@dimen/gc_icon_md"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_check"
+                        app:tint="@color/informative_active" />
+                </LinearLayout>
+
+                <View style="@style/Widget.GC.Divider" />
+
+                <!-- 실내등 -->
+                <LinearLayout
+                    android:id="@+id/gc_care_light_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingTop="@dimen/gc_space_12"
+                    android:paddingBottom="@dimen/gc_space_12">
+
+                    <ImageView
+                        style="@style/Widget.GC.IconBox.Small"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_bulb" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_space_24"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_light"
+                            android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                        <TextView
+                            android:id="@+id/gc_care_light_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_light_value"
+                            android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/gc_care_light_check"
+                        android:layout_width="@dimen/gc_icon_md"
+                        android:layout_height="@dimen/gc_icon_md"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_check"
+                        app:tint="@color/informative_active" />
+                </LinearLayout>
+
+                <View style="@style/Widget.GC.Divider" />
+
+                <!-- 화면 -->
+                <LinearLayout
+                    android:id="@+id/gc_care_screen_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingTop="@dimen/gc_space_12"
+                    android:paddingBottom="@dimen/gc_space_12">
+
+                    <ImageView
+                        style="@style/Widget.GC.IconBox.Small"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_monitor" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_space_24"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_screen"
+                            android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                        <TextView
+                            android:id="@+id/gc_care_screen_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gc_care_screen_value"
+                            android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/gc_care_screen_check"
+                        android:layout_width="@dimen/gc_icon_md"
+                        android:layout_height="@dimen/gc_icon_md"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/gc_ic_check"
+                        app:tint="@color/informative_active" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gc_gap"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/gc_action_edit"
+                    style="@style/Widget.GC.Button"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/gc_action_edit" />
+
+                <TextView
+                    android:id="@+id/gc_action_go_to_sleep"
+                    style="@style/Widget.GC.Button.Filled"
+                    android:layout_width="0dp"
+                    android:layout_marginStart="@dimen/gc_gap_sm"
+                    android:layout_weight="2"
+                    android:text="@string/gc_action_go_to_sleep" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="560dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/gc_bg_card"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/gc_card_padding_h"
+    android:paddingVertical="@dimen/gc_card_padding_v">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gc_setting_destination"
+        android:textAppearance="@style/TextAppearance.GC.CardTitle"
+        android:layout_marginBottom="@dimen/gc_space_20" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="420dp">
+
+        <LinearLayout
+            android:id="@+id/gc_place_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </ScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gc_divider"
+        android:background="@color/divider_primary"
+        android:layout_marginTop="@dimen/gc_space_20"
+        android:layout_marginBottom="@dimen/gc_space_16" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/gc_picker_cancel"
+            style="@style/Widget.GC.Button"
+            android:layout_width="wrap_content"
+            android:text="@string/gc_action_cancel" />
+
+    </LinearLayout>
+
+</LinearLayout>

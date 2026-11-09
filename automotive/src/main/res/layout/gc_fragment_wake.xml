@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ④ 기상 · Figma "GC/04 기상"
+  위: 기상 카드(칩, 일출까지 남은 시간, 난방 상태 + 일출 그래픽)
+  가운데: 어젯밤 기록 지표 4개
+  아래 왼쪽: 지금 차가 하는 일(스위치 3개), 오른쪽: 집 카드 + 집으로 안내 / 5분만 더
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.GC.AppRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="@dimen/gc_space_32"
+    android:paddingBottom="@dimen/gc_space_32"
+    tools:context=".ui.WakeFragment">
+
+    <include
+        android:id="@+id/gc_header"
+        layout="@layout/gc_view_header" />
+
+    <!-- ===== 기상 카드 ===== -->
+    <LinearLayout
+        android:id="@+id/gc_card_wake"
+        style="@style/Widget.GC.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gc_space_24"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/gc_space_24"
+        android:paddingBottom="@dimen/gc_space_24">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                style="@style/Widget.GC.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/gc_bg_chip_orange">
+
+                <ImageView
+                    android:layout_width="@dimen/gc_icon_xs"
+                    android:layout_height="@dimen/gc_icon_xs"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_sunrise"
+                    app:tint="@color/regulation_orange" />
+
+                <TextView
+                    android:id="@+id/gc_wake_chip_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_8"
+                    android:textAppearance="@style/TextAppearance.GC.Chip"
+                    android:textColor="@color/regulation_orange"
+                    tools:text="기상 · 06:40" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/gc_wake_headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gc_space_16"
+                android:textAppearance="@style/TextAppearance.GC.Headline"
+                tools:text="해 뜨기 12분 전이에요." />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gc_space_16"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/gc_icon_sm"
+                    android:layout_height="@dimen/gc_icon_sm"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_flame"
+                    app:tint="@color/regulation_orange" />
+
+                <TextView
+                    android:id="@+id/gc_wake_heating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_12"
+                    android:textAppearance="@style/TextAppearance.GC.RowValue"
+                    android:textColor="@color/text_secondary"
+                    tools:text="실내를 22°C로 데우는 중이에요" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 일출 그래픽 -->
+        <FrameLayout
+            android:id="@+id/gc_sunrise_graphic"
+            android:layout_width="@dimen/gc_sunrise_width"
+            android:layout_height="@dimen/gc_sunrise_height"
+            android:layout_marginStart="@dimen/gc_space_40"
+            android:background="@drawable/gc_bg_sunrise">
+
+            <TextView
+                android:id="@+id/gc_wake_sunrise"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gc_space_28"
+                android:layout_marginTop="@dimen/gc_space_24"
+                android:textAppearance="@style/TextAppearance.GC.LabelLg"
+                android:textColor="@color/text_primary"
+                android:textFontWeight="700"
+                tools:text="일출 06:52 · 동쪽" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- ===== 어젯밤 기록 ===== -->
+    <LinearLayout
+        android:id="@+id/gc_card_record"
+        style="@style/Widget.GC.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gc_space_24"
+        android:paddingTop="@dimen/gc_space_24"
+        android:paddingBottom="@dimen/gc_space_24">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/gc_wake_record"
+            android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_12"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/gc_stat_overnight_use"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <View style="@style/Widget.GC.Divider.Vertical" />
+
+            <include
+                android:id="@+id/gc_stat_avg_indoor"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <View style="@style/Widget.GC.Divider.Vertical" />
+
+            <include
+                android:id="@+id/gc_stat_ventilation"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <View style="@style/Widget.GC.Divider.Vertical" />
+
+            <include
+                android:id="@+id/gc_stat_arrival"
+                layout="@layout/gc_item_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/gc_space_24"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <!-- ===== 지금 차가 하는 일 ===== -->
+        <LinearLayout
+            android:id="@+id/gc_card_now_doing"
+            style="@style/Widget.GC.Card"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingTop="@dimen/gc_space_22"
+            android:paddingBottom="@dimen/gc_space_12">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/gc_space_4"
+                android:text="@string/gc_wake_now_doing"
+                android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+            <!-- 실내등 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/gc_space_6"
+                android:paddingBottom="@dimen/gc_space_6">
+
+                <ImageView
+                    style="@style/Widget.GC.IconBox.Small"
+                    android:layout_width="@dimen/gc_icon_box_xs"
+                    android:layout_height="@dimen/gc_icon_box_xs"
+                    android:padding="@dimen/gc_space_14"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_bulb" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_24"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_light"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_light_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_light_value"
+                        android:textAppearance="@style/TextAppearance.GC.RowValueSm" />
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/gc_wake_light_switch"
+                    style="@style/Widget.GC.Switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:contentDescription="@string/gc_wake_light" />
+            </LinearLayout>
+
+            <View style="@style/Widget.GC.Divider" />
+
+            <!-- 창문 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/gc_space_6"
+                android:paddingBottom="@dimen/gc_space_6">
+
+                <ImageView
+                    style="@style/Widget.GC.IconBox.Small"
+                    android:layout_width="@dimen/gc_icon_box_xs"
+                    android:layout_height="@dimen/gc_icon_box_xs"
+                    android:padding="@dimen/gc_space_14"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_window" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_24"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_window"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_window_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_window_value"
+                        android:textAppearance="@style/TextAppearance.GC.RowValueSm" />
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/gc_wake_window_switch"
+                    style="@style/Widget.GC.Switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:contentDescription="@string/gc_wake_window" />
+            </LinearLayout>
+
+            <View style="@style/Widget.GC.Divider" />
+
+            <!-- 시트 열선 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/gc_space_6"
+                android:paddingBottom="@dimen/gc_space_6">
+
+                <ImageView
+                    style="@style/Widget.GC.IconBox.Small"
+                    android:layout_width="@dimen/gc_icon_box_xs"
+                    android:layout_height="@dimen/gc_icon_box_xs"
+                    android:padding="@dimen/gc_space_14"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_seat" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_24"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_seat"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_seat_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_seat_value"
+                        android:textAppearance="@style/TextAppearance.GC.RowValueSm" />
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/gc_wake_seat_switch"
+                    style="@style/Widget.GC.Switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:contentDescription="@string/gc_wake_seat" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ===== 오른쪽 컬럼 ===== -->
+        <LinearLayout
+            android:layout_width="@dimen/gc_wake_right_column"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/gc_gap"
+            android:gravity="bottom"
+            android:orientation="vertical">
+
+            <!-- 피드백 카드 -->
+            <LinearLayout
+                android:id="@+id/gc_card_feedback"
+                style="@style/Widget.GC.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/gc_gap_sm"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gc_wake_feedback_title"
+                    android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_14"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/gc_feedback_good"
+                        style="@style/Widget.GC.Button"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/gc_wake_feedback_good" />
+
+                    <TextView
+                        android:id="@+id/gc_feedback_hot"
+                        style="@style/Widget.GC.Button"
+                        android:layout_width="0dp"
+                        android:layout_marginStart="@dimen/gc_space_8"
+                        android:layout_weight="1"
+                        android:text="@string/gc_wake_feedback_hot" />
+
+                    <TextView
+                        android:id="@+id/gc_feedback_cold"
+                        style="@style/Widget.GC.Button"
+                        android:layout_width="0dp"
+                        android:layout_marginStart="@dimen/gc_space_8"
+                        android:layout_weight="1"
+                        android:text="@string/gc_wake_feedback_cold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/gc_card_home"
+                style="@style/Widget.GC.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="@dimen/gc_space_20"
+                android:paddingBottom="@dimen/gc_space_20">
+
+                <ImageView
+                    style="@style/Widget.GC.IconBox.Night"
+                    android:layout_width="@dimen/gc_icon_box_sm"
+                    android:layout_height="@dimen/gc_icon_box_sm"
+                    android:padding="@dimen/gc_space_18"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_pin" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_20"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_destination_home"
+                        android:textAppearance="@style/TextAppearance.GC.RowValue"
+                        android:textFontWeight="800" />
+
+                    <TextView
+                        android:id="@+id/gc_wake_route"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_wake_route"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Pleos Navi requestRoute 호출 -->
+            <LinearLayout
+                android:id="@+id/gc_action_navigate_home"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/gc_button_height"
+                android:layout_marginTop="@dimen/gc_gap_sm"
+                android:background="@drawable/gc_bg_button_filled"
+                android:clickable="true"
+                android:contentDescription="@string/gc_action_navigate_home"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/gc_icon_md"
+                    android:layout_height="@dimen/gc_icon_md"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_navigation"
+                    app:tint="@color/text_on_filled" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_14"
+                    android:importantForAccessibility="no"
+                    android:text="@string/gc_action_navigate_home"
+                    android:textAppearance="@style/TextAppearance.GC.Button.Filled" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/gc_action_snooze"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/gc_button_height"
+                android:layout_marginTop="@dimen/gc_gap_sm"
+                android:background="@drawable/gc_bg_button_basic"
+                android:clickable="true"
+                android:contentDescription="@string/gc_action_snooze"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/gc_icon_md"
+                    android:layout_height="@dimen/gc_icon_md"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_snooze"
+                    app:tint="@color/text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/gc_space_14"
+                    android:importantForAccessibility="no"
+                    android:text="@string/gc_action_snooze"
+                    android:textAppearance="@style/TextAppearance.GC.Button" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

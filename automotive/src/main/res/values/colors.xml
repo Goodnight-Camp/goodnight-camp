@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  굿나잇 캠프 · Pleos Color (Light)
+  Pleos Connect design assets의 Foundation/Colors 토큰을 옮긴 값입니다.
+  Figma 파일의 "Pleos Color / Light" 컬렉션과 이름·값이 1:1로 대응합니다.
+  알파는 #AARRGGBB 형식입니다. (5%=0D, 8%=14, 10%=1A, 12%=1F, 32%=52, 64%=A3, 84%=D6)
+-->
+<resources>
+    <!-- Background / Surface -->
+    <color name="background_primary">#F7F8FA</color>
+    <color name="surface_basic">#FFFFFF</color>
+    <color name="surface_high">#EDEEF2</color>
+    <color name="border_card">#E0E1E6</color>
+    <color name="divider_primary">#1A131417</color>
+
+    <!-- Text -->
+    <color name="text_primary">#131417</color>
+    <color name="text_secondary">#D6131417</color>
+    <color name="text_tertiary">#A3131417</color>
+    <color name="text_quaternary">#52131417</color>
+    <color name="text_on_filled">#FFFFFF</color>
+
+    <!-- Button (ivi_basic_button) -->
+    <color name="button_basic_enabled">#0D131417</color>
+    <color name="button_basic_pressed">#1A131417</color>
+    <color name="button_basic_disabled">#33FFFFFF</color>
+    <color name="button_filled_enabled">#313236</color>
+    <color name="button_filled_pressed">#1D1E21</color>
+
+    <!-- Informative -->
+    <color name="informative_active">#02C265</color>
+    <color name="informative_positive">#0064FF</color>
+    <color name="informative_negative">#FE3D16</color>
+    <color name="informative_night">#5A46FA</color>
+    <color name="regulation_orange">#FF8A00</color>
+
+    <!-- Tint (chip, icon box, phase) -->
+    <color name="tint_negative">#1AFE3D16</color>
+    <color name="tint_active">#1F02C265</color>
+    <color name="tint_night">#1A5A46FA</color>
+    <color name="tint_orange">#1FFF8A00</color>
+
+    <!-- Switch (ivi_switch) -->
+    <color name="switch_on">#02C265</color>
+    <color name="switch_off">#4D131417</color>
+    <color name="switch_knob">#FFFFFF</color>
+
+    <!-- 수면 중 화면: 라이트 모드에서도 어둡게 유지 -->
+    <color name="sleep_background">#16171A</color>
+    <color name="sleep_text">#7AFFFFFF</color>
+    <color name="sleep_text_dim">#3DFFFFFF</color>
+
+    <!-- 기상 화면 일출 그래픽 -->
+    <color name="sunrise_start">#C9D3FF</color>
+    <color name="sunrise_end">#FFD9A8</color>
+    <color name="sunrise_sun">#FFB547</color>
+
+    <!-- 목적지 검색 목록 -->
+    <color name="gnc_text">#131417</color>
+    <color name="gnc_text_dim">#D6131417</color>
+    <color name="gnc_text_sub">#A3131417</color>
+    <color name="gnc_line">#1A131417</color>
+    <color name="gnc_accent">#FF8A00</color>
+    <color name="gnc_border">#E0E1E6</color>
+    <color name="gnc_bg">#FFFFFF</color>
+    <color name="gnc_surface">#F7F8FA</color>
+</resources>

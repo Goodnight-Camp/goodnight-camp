@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ③ 수면 중 · Figma "GC/03 수면 중"
+  빛을 거의 내지 않는 화면입니다. 라이트·다크 모드와 관계없이 어둡게 유지합니다.
+  화면 밝기 최저화(Pleos Display), 탭 시 3초 밝아짐은 코드에서 처리합니다.
+  진행 바는 22:00~06:30 중 지난 비율을 setProgress(0~1000)로 넣습니다.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gc_sleep_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sleep_background"
+    android:clickable="true"
+    android:focusable="true"
+    tools:context=".ui.SleepingFragment">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/gc_icon_sm"
+                android:layout_height="@dimen/gc_icon_sm"
+                android:importantForAccessibility="no"
+                android:src="@drawable/gc_ic_moon"
+                app:tint="@color/sleep_text" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/gc_space_12"
+                android:text="@string/gc_sleep_header"
+                android:textAppearance="@style/TextAppearance.GC.Sleep" />
+        </LinearLayout>
+
+        <TextClock
+            android:id="@+id/gc_sleep_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_20"
+            android:format12Hour="hh:mm"
+            android:format24Hour="HH:mm"
+            android:textAppearance="@style/TextAppearance.GC.Sleep.Clock"
+            tools:text="02:14" />
+
+        <TextView
+            android:id="@+id/gc_sleep_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_20"
+            android:textAppearance="@style/TextAppearance.GC.Sleep.Status"
+            tools:text="19.8°C 유지 중 · 잔량 77% · 계획대로 가는 중" />
+
+        <ProgressBar
+            android:id="@+id/gc_sleep_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="@dimen/gc_sleep_progress_width"
+            android:layout_height="@dimen/gc_sleep_progress_height"
+            android:layout_marginTop="@dimen/gc_space_56"
+            android:max="1000"
+            android:progressDrawable="@drawable/gc_sleep_progress"
+            tools:progress="430" />
+
+        <FrameLayout
+            android:layout_width="@dimen/gc_sleep_progress_width"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_14">
+
+            <TextView
+                android:id="@+id/gc_sleep_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:textAppearance="@style/TextAppearance.GC.Sleep.Dim"
+                android:textSize="@dimen/gc_text_caption"
+                tools:text="22:00" />
+
+            <TextView
+                android:id="@+id/gc_sleep_wake"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:textAppearance="@style/TextAppearance.GC.Sleep.Dim"
+                android:textSize="@dimen/gc_text_caption"
+                tools:text="06:30 기상" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_96"
+            android:text="@string/gc_sleep_hint_tap"
+            android:textAppearance="@style/TextAppearance.GC.Sleep.Dim" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_6"
+            android:text="@string/gc_sleep_hint_adjust"
+            android:textAppearance="@style/TextAppearance.GC.Sleep.Dim" />
+    </LinearLayout>
+</FrameLayout>

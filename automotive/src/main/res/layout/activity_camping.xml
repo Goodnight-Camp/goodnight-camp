@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 캠핑 모드 메인 UI -->
+    <LinearLayout
+        android:id="@+id/gc_camping_content"
+        style="@style/Widget.GC.AppRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            android:id="@+id/gc_header"
+            layout="@layout/gc_view_header" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/gc_gap"
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <!-- 왼쪽: 현재 상태 카드 -->
+            <LinearLayout
+                android:id="@+id/gc_card_status"
+                style="@style/Widget.GC.Card"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/gc_bg_chip_active"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/gc_space_18"
+                    android:paddingTop="@dimen/gc_space_8"
+                    android:paddingEnd="@dimen/gc_space_20"
+                    android:paddingBottom="@dimen/gc_space_8">
+
+                    <View
+                        android:layout_width="@dimen/gc_dot"
+                        android:layout_height="@dimen/gc_dot"
+                        android:background="@color/informative_active" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/gc_space_8"
+                        android:text="@string/gc_camping_status_chip"
+                        android:textAppearance="@style/TextAppearance.GC.Chip"
+                        android:textColor="@color/informative_active" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/gc_camping_headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_24"
+                    android:textAppearance="@style/TextAppearance.GC.HeadlineMd"
+                    tools:text="20°C로 따뜻하게 관리 중이에요" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_24"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/gc_stat_battery"
+                        layout="@layout/gc_item_stat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <View style="@style/Widget.GC.Divider.Vertical" />
+
+                    <include
+                        android:id="@+id/gc_stat_outside"
+                        layout="@layout/gc_item_stat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <View style="@style/Widget.GC.Divider.Vertical" />
+
+                    <include
+                        android:id="@+id/gc_stat_until_wake"
+                        layout="@layout/gc_item_stat"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 오른쪽: 지금 차가 하는 일 + 종료 버튼 -->
+            <LinearLayout
+                android:layout_width="@dimen/gc_right_column"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/gc_gap"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/gc_card_now_doing"
+                    style="@style/Widget.GC.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:paddingTop="@dimen/gc_space_24"
+                    android:paddingBottom="@dimen/gc_space_16">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/gc_space_8"
+                        android:text="@string/gc_wake_now_doing"
+                        android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                    <!-- 공조 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="@dimen/gc_space_12"
+                        android:paddingBottom="@dimen/gc_space_12">
+
+                        <ImageView
+                            style="@style/Widget.GC.IconBox.Small"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/gc_ic_thermometer" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/gc_space_24"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/gc_camping_hvac"
+                                android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                            <TextView
+                                android:id="@+id/gc_camping_hvac_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                tools:text="20°C 유지 중" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/gc_icon_md"
+                            android:layout_height="@dimen/gc_icon_md"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/gc_ic_check"
+                            app:tint="@color/informative_active" />
+                    </LinearLayout>
+
+                    <View style="@style/Widget.GC.Divider" />
+
+                    <!-- 환기 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="@dimen/gc_space_12"
+                        android:paddingBottom="@dimen/gc_space_12">
+
+                        <ImageView
+                            style="@style/Widget.GC.IconBox.Small"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/gc_ic_wind" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/gc_space_24"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/gc_care_ventilation"
+                                android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/gc_care_ventilation_value"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/gc_icon_md"
+                            android:layout_height="@dimen/gc_icon_md"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/gc_ic_check"
+                            app:tint="@color/informative_active" />
+                    </LinearLayout>
+
+                    <View style="@style/Widget.GC.Divider" />
+
+                    <!-- 성애제거 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingTop="@dimen/gc_space_12"
+                        android:paddingBottom="@dimen/gc_space_12">
+
+                        <ImageView
+                            style="@style/Widget.GC.IconBox.Small"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/gc_ic_thermometer" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/gc_space_24"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/gc_care_defrost"
+                                android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/gc_care_defrost_value"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/gc_icon_md"
+                            android:layout_height="@dimen/gc_icon_md"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/gc_ic_check"
+                            app:tint="@color/informative_active" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/gc_action_stop_camping"
+                    style="@style/Widget.GC.Button"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="@dimen/gc_gap"
+                    android:text="@string/gc_action_stop_camping" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 수면 오버레이 — 5분 무동작 시 VISIBLE -->
+    <include
+        android:id="@+id/gc_sleep_overlay"
+        layout="@layout/gc_fragment_sleeping"
+        android:visibility="gone" />
+
+</FrameLayout>

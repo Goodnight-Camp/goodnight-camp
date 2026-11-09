@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--  HVAC Permission  -->
+    <uses-permission android:name="pleos.car.permission.CAR_CLIMATE" />
+    <!--  EvBattery  -->
+    <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />
+    <!-- Car Info 혹시 hvac 자동 운용시 차량 cc에 맞는거 제공해줘야할 필요가 있어서 -->
+    <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />
+    <!-- AAOS에서 사용 -->
+    <uses-permission android:name="android.car.permission.CAR_EXTERIOR_ENVIRONMENT" />
+    <uses-permission android:name="android.car.permission.CAR_EXTERIOR_ENVIRONMENT" />
+    <uses-permission android:name="pleos.car.permission.CAR_INFO" />
+    <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
+    <uses-permission android:name="pleos.car.permission.FUSED_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-feature
+        android:name="android.hardware.type.automotive"
+        android:required="true" />
+
+    <application
+        android:name=".GoodNightCampApp"
+        android:allowBackup="true"
+        android:appCategory="audio"
+        android:icon="@mipmap/ic_goodnight_camp"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_goodnight_camp_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.GoodnightCamp">
+        <!-- CCP 미지원 선언 -->
+        <meta-data
+            android:name="com.hmg.rotary.ROTARY_SUPPORTED"
+            android:value="false"/>
+        <activity
+            android:name=".activity.SetUpActivity"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.PlanActivity"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.CampingActivity"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:exported="false" />
+
+        <activity
+            android:name=".activity.WakeActivity"
+            android:configChanges="orientation|screenSize|screenLayout"
+            android:exported="false" />
+
+        <service
+            android:name=".service.CarDataService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+    </application>
+
+</manifest>

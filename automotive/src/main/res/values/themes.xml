@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  굿나잇 캠프 테마
+  DayNight 부모를 쓰므로 시스템 라이트·다크 설정에 따라 values/colors.xml 과
+  values-night/colors.xml 이 자동으로 바뀝니다. 별도의 다크 테마 파일은 필요 없습니다.
+  의존성: com.google.android.material:material (Material 3)
+-->
+<resources>
+    <style name="Theme.GoodnightCamp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/informative_night</item>
+        <item name="colorOnPrimary">@color/text_on_filled</item>
+        <item name="colorSecondary">@color/informative_active</item>
+        <item name="colorError">@color/informative_negative</item>
+        <item name="android:colorBackground">@color/background_primary</item>
+        <item name="colorSurface">@color/surface_basic</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOutline">@color/border_card</item>
+        <item name="android:windowBackground">@color/background_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_tertiary</item>
+        <item name="android:fontFamily">@font/gc_asta_sans</item>
+        <item name="fontFamily">@font/gc_asta_sans</item>
+    </style>
+
+    <!-- 수면 중 화면 전용: 항상 어둡게, 시스템 바 없이 -->
+    <style name="Theme.GoodnightCamp.Sleep">
+        <item name="android:windowBackground">@color/sleep_background</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>

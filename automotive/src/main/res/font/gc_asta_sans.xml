@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Asta Sans 폰트 패밀리 (Pleos Connect 디자인 에셋의 시스템 글꼴, 42dot Sans의 새 이름)
+  한글 포함 · SIL Open Font License 1.1 (FONT_LICENSE_OFL.txt)
+  스타일에서 android:textFontWeight 300/400/500/700/800 으로 굵기를 고릅니다.
+-->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <font android:font="@font/asta_sans_light" android:fontStyle="normal" android:fontWeight="300"
+        app:font="@font/asta_sans_light" app:fontStyle="normal" app:fontWeight="300" />
+    <font android:font="@font/asta_sans_regular" android:fontStyle="normal" android:fontWeight="400"
+        app:font="@font/asta_sans_regular" app:fontStyle="normal" app:fontWeight="400" />
+    <font android:font="@font/asta_sans_medium" android:fontStyle="normal" android:fontWeight="500"
+        app:font="@font/asta_sans_medium" app:fontStyle="normal" app:fontWeight="500" />
+    <font android:font="@font/asta_sans_bold" android:fontStyle="normal" android:fontWeight="700"
+        app:font="@font/asta_sans_bold" app:fontStyle="normal" app:fontWeight="700" />
+    <font android:font="@font/asta_sans_extrabold" android:fontStyle="normal" android:fontWeight="800"
+        app:font="@font/asta_sans_extrabold" app:fontStyle="normal" app:fontWeight="800" />
+</font-family>

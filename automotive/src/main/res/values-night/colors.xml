@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  굿나잇 캠프 · Pleos Color (Dark)
+  Figma 파일의 "Pleos Color / Dark" 컬렉션과 1:1로 대응합니다.
+  시스템이 다크 모드일 때 values/colors.xml 대신 자동으로 쓰입니다.
+-->
+<resources>
+    <!-- Background / Surface -->
+    <color name="background_primary">#131417</color>
+    <color name="surface_basic">#1D1E21</color>
+    <color name="surface_high">#313236</color>
+    <color name="border_card">#2A2B2F</color>
+    <color name="divider_primary">#1AFFFFFF</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#D6FFFFFF</color>
+    <color name="text_tertiary">#A3FFFFFF</color>
+    <color name="text_quaternary">#52FFFFFF</color>
+    <color name="text_on_filled">#131417</color>
+
+    <!-- Button -->
+    <color name="button_basic_enabled">#14FFFFFF</color>
+    <color name="button_basic_pressed">#26FFFFFF</color>
+    <color name="button_basic_disabled">#0DFFFFFF</color>
+    <color name="button_filled_enabled">#E0E1E6</color>
+    <color name="button_filled_pressed">#C7C9CE</color>
+
+    <!-- Informative -->
+    <color name="informative_active">#00E074</color>
+    <color name="informative_positive">#0082FF</color>
+    <color name="informative_negative">#FF4C28</color>
+    <color name="informative_night">#6A57FF</color>
+    <color name="regulation_orange">#FF8A00</color>
+
+    <!-- Tint -->
+    <color name="tint_negative">#2EFF4C28</color>
+    <color name="tint_active">#2900E074</color>
+    <color name="tint_night">#386A57FF</color>
+    <color name="tint_orange">#2EFF8A00</color>
+
+    <!-- Switch -->
+    <color name="switch_on">#00E074</color>
+    <color name="switch_off">#4DFFFFFF</color>
+    <color name="switch_knob">#FFFFFF</color>
+
+    <!-- 수면 중 -->
+    <color name="sleep_background">#000000</color>
+    <color name="sleep_text">#52FFFFFF</color>
+    <color name="sleep_text_dim">#29FFFFFF</color>
+
+    <!-- 일출 그래픽 -->
+    <color name="sunrise_start">#1B1A3A</color>
+    <color name="sunrise_end">#6B3A1E</color>
+    <color name="sunrise_sun">#FFB547</color>
+
+    <!-- 목적지 검색 목록 -->
+    <color name="gnc_text">#FFFFFF</color>
+    <color name="gnc_text_dim">#D6FFFFFF</color>
+    <color name="gnc_text_sub">#A3FFFFFF</color>
+    <color name="gnc_line">#1AFFFFFF</color>
+</resources>

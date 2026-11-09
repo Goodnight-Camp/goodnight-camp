@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="@dimen/gc_space_8"
+    android:paddingVertical="@dimen/gc_space_20">
+
+    <ImageView
+        android:layout_width="@dimen/gc_icon_sm"
+        android:layout_height="@dimen/gc_icon_sm"
+        android:importantForAccessibility="no"
+        android:src="@drawable/gc_ic_pin"
+        android:layout_marginEnd="@dimen/gc_space_16" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/gc_result_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.GC.RowValue" />
+
+        <TextView
+            android:id="@+id/gc_result_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_4"
+            android:textAppearance="@style/TextAppearance.GC.Caption" />
+
+    </LinearLayout>
+
+</LinearLayout>

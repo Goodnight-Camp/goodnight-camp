@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 선택됨: 두꺼운 주황 링 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/gnc_bg" />
+    <stroke android:width="12dp" android:color="@color/gnc_accent" />
+</shape>
