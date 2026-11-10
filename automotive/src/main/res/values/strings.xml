@@ -109,6 +109,11 @@
     <string name="gc_wake_seat_value">운전석 켜짐</string>
     <string name="gc_wake_route">182 km · 약 2시간 30분</string>
     <string name="gc_action_navigate_home">집으로 안내</string>
+    <string name="gc_route_home_started">%1$s(으)로 경로 안내를 시작해요</string>
+    <string name="gc_route_home_no_bookmark">내비게이션에 집이 등록되어 있지 않아요. 내비에서 집을 먼저 등록해 주세요</string>
+    <string name="gc_route_home_timeout">내비게이션이 응답하지 않아요. 잠시 후 다시 시도해 주세요</string>
+    <string name="gc_route_home_permission">내비게이션 경로 권한이 없어 안내할 수 없어요</string>
+    <string name="gc_route_home_failed">경로를 찾지 못했어요 (%1$s)</string>
     <string name="gc_action_snooze">5분만 더</string>
     <string name="gc_wake_greeting">잘 주무셨나요?</string>
     <string name="gc_wake_phase_a_subtitle">기상</string>

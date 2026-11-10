@@ -8,10 +8,12 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.pleostest.R
 import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
+import com.example.pleostest.sdk.HomeRouteResult
 import com.example.pleostest.sdk.NaviManager
 import com.example.pleostest.service.CarDataService
 import com.example.pleostest.util.GNCLog
@@ -91,14 +93,15 @@ class WakeActivity : BaseActivity() {
         headerB.findViewById<TextView>(R.id.gc_header_subtitle).text =
             getString(R.string.gc_wake_phase_b_subtitle)
 
-        // 집으로 안내
-        findViewById<View>(R.id.gc_action_navigate_home).setOnClickListener {
-            GNCLog.i("[WakeActivity] 집으로 안내 버튼 탭 → 즐겨찾기 조회")
-            naviManager.requestPlaceList { places ->
-                val home = places.firstOrNull { it.label == "집" }
-                GNCLog.i("[WakeActivity] 즐겨찾기 ${places.size}개 수신, 집=${home?.address ?: "없음"}")
-                // TODO: naviHelper.requestRoute(home.lat, home.lng) — SDK 메서드 확인 필요
+        // 집으로 안내 → 순정 내비 HOME 즐겨찾기로 경로 안내 시작
+        val navigateHome = findViewById<View>(R.id.gc_action_navigate_home)
+        navigateHome.setOnClickListener {
+            GNCLog.i("[WakeActivity] 집으로 안내 버튼 탭 → 귀가 경로 요청")
+            val started = naviManager.requestHomeRoute { result ->
+                navigateHome.isEnabled = true
+                onHomeRouteResult(result)
             }
+            if (started) navigateHome.isEnabled = false   // 응답 올 때까지 중복 탭 방지
         }
 
         // 피드백 버튼 (LinearLayout 컨테이너)
@@ -114,6 +117,18 @@ class WakeActivity : BaseActivity() {
                     selectFeedback(v)
                 }
             }
+    }
+
+    private fun onHomeRouteResult(result: HomeRouteResult) {
+        val message = when (result) {
+            is HomeRouteResult.Requested -> getString(R.string.gc_route_home_started, result.homeName)
+            HomeRouteResult.NoHomeBookmark -> getString(R.string.gc_route_home_no_bookmark)
+            HomeRouteResult.Timeout -> getString(R.string.gc_route_home_timeout)
+            HomeRouteResult.PermissionDenied -> getString(R.string.gc_route_home_permission)
+            is HomeRouteResult.Failed -> getString(R.string.gc_route_home_failed, result.errorCode.name)
+        }
+        GNCLog.i("[WakeActivity] 귀가 경로 결과 — $result")
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun showPhaseB() {
