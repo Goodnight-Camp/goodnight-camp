@@ -101,5 +101,10 @@
     <string name="gc_wake_seat_value">Driver seat on</string>
     <string name="gc_wake_route">182 km · about 2 hr 30 min</string>
     <string name="gc_action_navigate_home">Navigate home</string>
+    <string name="gc_route_home_started">Starting route guidance to %1$s</string>
+    <string name="gc_route_home_no_bookmark">No home is saved in navigation. Please set your home in the navigation app first</string>
+    <string name="gc_route_home_timeout">Navigation is not responding. Please try again shortly</string>
+    <string name="gc_route_home_permission">Missing navigation route permission</string>
+    <string name="gc_route_home_failed">Could not find a route (%1$s)</string>
     <string name="gc_action_snooze">5 more minutes</string>
 </resources>

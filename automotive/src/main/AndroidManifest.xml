@@ -13,6 +13,10 @@
     <uses-permission android:name="pleos.car.permission.CAR_INFO" />
     <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
     <uses-permission android:name="pleos.car.permission.FUSED_LOCATION" />
+    <!-- NaviHelper: 즐겨찾기/목적지 조회 (getBookmarkInfo 등), 경로 요청 (requestRoute)
+         누락 시 SDK가 SecurityException을 던짐 — Protection level: Normal -->
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
