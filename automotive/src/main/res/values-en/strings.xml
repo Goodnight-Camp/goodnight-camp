@@ -56,6 +56,7 @@
     <string name="gc_stat_morning">By morning</string>
     <string name="gc_stat_overnight_use">Used overnight</string>
     <string name="gc_stat_needed_home">Needed for home</string>
+    <string name="gc_stat_needed_home_navi">Needed for home · Navi</string>
     <string name="gc_plan_budget">Battery budget</string>
     <string name="gc_plan_legend_forecast">Expected charge</string>
     <string name="gc_plan_legend_reserve">Reserved for home</string>

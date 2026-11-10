@@ -34,7 +34,7 @@ data class PlaceResult(
 
 class DestinationSearchDialog(
     context: Context,
-    private val onPlaceSelected: (name: String, distanceKm: Int) -> Unit
+    private val onPlaceSelected: (name: String, distanceKm: Int, lat: Double, lng: Double) -> Unit
 ) : Dialog(context) {
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -178,7 +178,7 @@ class DestinationSearchDialog(
         } else 0
 
         GNCLog.i("[DestinationSearch] 선택: ${place.name}, 거리: ${distanceKm}km")
-        onPlaceSelected(place.name, distanceKm)
+        onPlaceSelected(place.name, distanceKm, place.lat, place.lng)
         dismiss()
     }
 }

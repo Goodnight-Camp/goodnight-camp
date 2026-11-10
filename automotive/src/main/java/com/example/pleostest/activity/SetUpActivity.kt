@@ -71,10 +71,12 @@ class SetUpActivity : BaseActivity() {
         GNCLog.d("[SetUpActivity] CarDataService 브로드캐스트 수신 등록")
 
         naviManager.initialize()
-        naviManager.onDestination = { name, km ->
+        naviManager.onDestination = { name, km, lat, lng ->
             GNCLog.i("[SetUpActivity] NaviManager 목적지 갱신 → name=$name, km=$km")
             GlobalVariables.destinationName = name
             GlobalVariables.destinationDistanceKm = km
+            GlobalVariables.destinationLat = lat
+            GlobalVariables.destinationLng = lng
             runOnUiThread { updateDestinationRow() }
         }
 
@@ -91,6 +93,7 @@ class SetUpActivity : BaseActivity() {
             GNCLog.d("[SetUpActivity] 차량 데이터 존재 → 즉시 갱신")
             refreshVehicleStats()
         }
+        updateDestinationRow()   // 밤 계획에서 내비 예측으로 목적지·거리가 바뀌었을 수 있음
         loadSleepRecords()
         refreshHeaderLocation()
     }
@@ -148,10 +151,12 @@ class SetUpActivity : BaseActivity() {
         // 목적지 변경 → 검색 다이얼로그
         findViewById<TextView>(R.id.gc_destination_change).setOnClickListener {
             GNCLog.i("[SetUpActivity] 목적지 변경 버튼 탭")
-            DestinationSearchDialog(this) { name, km ->
+            DestinationSearchDialog(this) { name, km, lat, lng ->
                 GNCLog.i("[SetUpActivity] 목적지 선택 완료 → name=$name, km=$km (이전: ${GlobalVariables.destinationName})")
                 GlobalVariables.destinationName = name
                 GlobalVariables.destinationDistanceKm = km
+                GlobalVariables.destinationLat = lat
+                GlobalVariables.destinationLng = lng
                 updateDestinationRow()
             }.show()
         }
@@ -335,6 +340,8 @@ class SetUpActivity : BaseActivity() {
         GNCLog.i("[SetUpActivity] 수면 기록 적용 — id=${record.id}, dest=${record.destinationName}, wakeTime=${record.wakeTime}, temp=${record.setTemperatureDeg}°C, guests=${record.guestCount}명, reserve=${record.marginBatteryPct}%")
         GlobalVariables.destinationName = record.destinationName
         GlobalVariables.destinationDistanceKm = record.destinationDistanceKm
+        GlobalVariables.destinationLat = record.destinationLat
+        GlobalVariables.destinationLng = record.destinationLng
         GlobalVariables.wakeTime = record.wakeTime
         GlobalVariables.setTemperatureDeg = record.setTemperatureDeg
         GlobalVariables.marginBatteryPct = record.marginBatteryPct

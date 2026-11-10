@@ -7,17 +7,65 @@ import android.widget.TextView
 import com.example.pleostest.R
 import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
+import com.example.pleostest.sdk.HomeTrip
+import com.example.pleostest.sdk.NaviManager
+import com.example.pleostest.sdk.TripEstimate
+import com.example.pleostest.sdk.TripResult
 import com.example.pleostest.ui.BatteryBudgetChartView
 import com.example.pleostest.util.GNCLog
 
 class PlanActivity : BaseActivity() {
 
+    private val naviManager: NaviManager by lazy { NaviManager(this) }
+
+    /** 순정 내비 requestTrip으로 받은 "집까지 필요 %". -1 = 아직 없음(앱 추정식 사용) */
+    private var naviNeededPct = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan)
 
-        populateViews()
+        naviManager.initialize()
+        populateViews()          // 우선 앱 추정식으로 즉시 표시
         setupListeners()
+        requestNaviEstimate()    // 내비 예측이 오면 다시 그림
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        naviManager.release()
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 순정 내비 귀가 예측
+    // ────────────────────────────────────────────────────────────────
+
+    private fun requestNaviEstimate() {
+        val destination = HomeTrip.placeOf(
+            GlobalVariables.destinationName,
+            GlobalVariables.destinationLat,
+            GlobalVariables.destinationLng
+        )
+        naviManager.requestTripEstimate(destination, GlobalFunction.batteryPctOrNull()) { result ->
+            if (isFinishing || isDestroyed) return@requestTripEstimate
+            when (result) {
+                is TripResult.Estimated -> applyNaviEstimate(result.estimate, adoptPlace = destination == null)
+                else -> GNCLog.w("[PlanActivity] 내비 예측 실패 → 앱 추정식 유지: $result")
+            }
+        }
+    }
+
+    private fun applyNaviEstimate(est: TripEstimate, adoptPlace: Boolean) {
+        GNCLog.i("[PlanActivity] 내비 예측 적용 — ${est.place.name}, ${est.distanceKm}km, 도착 예상 ${est.socAtDestPct}%, 필요 ${est.neededPct}%")
+        if (adoptPlace) {
+            // 목적지를 고른 적 없으면 내비 HOME 즐겨찾기가 귀가 목적지
+            GlobalVariables.destinationName = est.place.name
+            GlobalVariables.destinationLat = est.place.lat
+            GlobalVariables.destinationLng = est.place.lng
+        }
+        GlobalVariables.destinationDistanceKm = est.distanceKm   // 직선거리×1.3 대신 실제 도로 거리
+        naviNeededPct = est.neededPct
+        populateViews()
     }
 
     // ────────────────────────────────────────────────────────────────
@@ -34,7 +82,7 @@ class PlanActivity : BaseActivity() {
         findViewById<TextView>(R.id.gc_plan_headline).text =
             getString(R.string.gc_plan_headline, tempLabel)
 
-        val budget = GlobalFunction.calculateBatteryBudget()
+        val budget = GlobalFunction.calculateBatteryBudget(naviNeededPct)
         GNCLog.i("[PlanActivity] 배터리 예산 계산 결과 — current=${budget.currentPct}%, morning=${budget.morningPct}%, overnightUse=${budget.overnightUsePct}%, neededHome=${budget.neededForHomePct}%, reserve=${budget.reservePct}%, viable=${budget.isViable}")
 
         // GlobalVariables 갱신 (다른 화면에서도 참조)
@@ -57,7 +105,8 @@ class PlanActivity : BaseActivity() {
         )
         GlobalFunction.setStatItem(
             findViewById(R.id.gc_stat_needed_home),
-            budget.neededForHomePct.toString(), "%", getString(R.string.gc_stat_needed_home)
+            budget.neededForHomePct.toString(), "%",
+            getString(if (budget.neededFromNavi) R.string.gc_stat_needed_home_navi else R.string.gc_stat_needed_home)
         )
 
         // 그래프
@@ -102,6 +151,8 @@ class PlanActivity : BaseActivity() {
         val record = com.example.pleostest.db.SleepRecord(
             destinationName = GlobalVariables.destinationName,
             destinationDistanceKm = GlobalVariables.destinationDistanceKm,
+            destinationLat = GlobalVariables.destinationLat,
+            destinationLng = GlobalVariables.destinationLng,
             wakeTime = GlobalVariables.wakeTime,
             setTemperatureDeg = GlobalVariables.setTemperatureDeg,
             marginBatteryPct = GlobalVariables.marginBatteryPct,

@@ -20,6 +20,9 @@ public class GlobalVariables {
     // 목적지
     public static String destinationName = "집 · 마포구";
     public static int destinationDistanceKm = 182;
+    // 목적지 좌표 — (0,0)이면 미상 → 내비 HOME 즐겨찾기로 귀가 예측
+    public static double destinationLat = 0.0;
+    public static double destinationLng = 0.0;
     public static int neededForHomePct = 35;   // 집까지 필요한 배터리 %
 
     // 일출 시간 (위치 기반으로 갱신)
