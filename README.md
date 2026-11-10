@@ -81,7 +81,8 @@ automotive/src/main/
 │   │   ├── VehicleManager.kt        # Pleos Vehicle SDK 래퍼 — 배터리·온도·효율·용량
 │   │   ├── LocationManager.kt       # Pleos FusedLocation 래퍼 — GPS (현재 SDK 지원 X -> 기존 android sdk 사용)
 │   │   ├── NaviManager.kt           # Pleos NaviHelper 래퍼 — 즐겨찾기·목적지 조회, 귀가 경로 요청
-│   │   └── HomeRoute.kt             # HOME 즐겨찾기 → RouteInfo 변환 + 귀가 경로 결과 타입
+│   │   ├── HomeRoute.kt             # HOME 즐겨찾기 → RouteInfo 변환 + 귀가 경로 결과 타입
+│   │   └── HomeTrip.kt              # 귀가 예측(requestTrip) 요청·응답 변환 + 결과 타입
 │   │
 │   ├── dialog/
 │   │   ├── GcTimePickerDialog.kt    # 기상 시각 선택 다이얼로그
@@ -141,6 +142,23 @@ automotive/src/main/
 - stat 4개: 현재 배터리 / 아침 예상 / 밤새 사용량 / 귀가 필요량
 - `BatteryBudgetChartView` 커스텀 그래프로 배터리 예산 흐름 표시
 - 화면 꺼지는 예상 시각 표시 (기상 시각 기준 7시간 전)
+
+**귀가 필요량 — 순정 내비 예측 (`NaviManager.requestTripEstimate`)**
+- 화면 진입 시 앱 추정식으로 먼저 표시 → `NaviHelper.requestTrip(TripRequest)` → `onTripInfo`가 오면 다시 그림 (경로 안내는 시작하지 않음)
+- 대상: 고른 목적지 좌표, 없으면(0,0) 내비 HOME 즐겨찾기 — 이 경우 HOME을 귀가 목적지로 채택
+- `집까지 필요 % = 현재 배터리 − TripInfo.estimatedSocAtDest`, 거리 = `TripInfo.distance` (실제 도로 거리)
+  - 내비 화면의 "도착 시 배터리"와 같은 값 (실측: 서울역 KTX 23.8km, 100% → 96%, 필요 4% / 추정식은 47%)
+- 표시: stat 라벨 "집까지 필요 · 내비", 그래프 "집까지 N%(내비 예측)"
+- 내비 예측을 못 쓰면 기존 추정식(`목적지km ÷ 전비 ÷ 용량`) 유지: 10초 무응답, 집 미등록, 권한 없음, `onError`, 차량 배터리 미수신(기본값 80%와 섞지 않음)
+- 필요 권한: `pleos.car.permission.NAVI_ROUTE` (`requestTrip`도 이 권한으로 검사)
+- `TripInfo` 실측 단위: `distance` m · `eta` 초 · `energyConsumption` Wh
+- 내비 서비스 연결(`initialize` 성공 콜백) 전 요청은 큐에 보관 후 연결 시 실행
+- 주의: 내비는 `onTripInfo`를 연결된 모든 클라이언트에 보냄 → 대기 중 다른 앱이 `requestTrip`하면 그 결과를 받을 수 있음
+
+**밤새 공조 소비량 — 앱 자체 추정식 유지**
+- Pleos SDK에 공조 소비 전력·예측 API 없음 (Vehicle SDK 2.3.2 HVAC는 상태 조회·제어만, NaviHelper는 주행 에너지만)
+- AAOS VHAL `EV_BATTERY_INSTANTANEOUS_CHARGE_RATE`(순간 충방전 전력)는 `android.car.permission.CAR_ENERGY`(dangerous)로 앱에서 읽기 가능함을 확인
+  - 단, 에뮬레이터는 0W 고정이라 공조 연동 여부 미검증 · 차량 전체 소비량이며 예측값 아님 → 실차에서 추정식 보정용 후보
 - [수정] → SetUpActivity 복귀
 - [이대로 잘게요] → `campingStartMin` 기록 + `SleepRecord` DB 저장 → CampingActivity 진입
 
@@ -301,6 +319,9 @@ adb logcat -s GNC | grep "PlanActivity"
 
 - [ ] SetUpActivity에서 [밤 계획 만들기] → PlanActivity 진입 확인
 - [ ] stat 4개 (현재·아침·밤새 사용·귀가 필요) 올바르게 표시되는지 확인
+- [ ] 내비에 집 등록 상태에서 진입 → `[NaviManager] 귀가 예측 결과: Estimated(...)` 로그 + "집까지 필요 · 내비" 표시 확인
+- [ ] 집 미등록 상태 → `NoHomeBookmark` 로그 + 추정식 값 유지 확인
+- [ ] 밤 계획 후 [수정]으로 복귀 → 설정 화면 목적지가 내비 HOME 이름·도로 거리로 갱신됐는지 확인
 - [ ] `BatteryBudgetChartView` 그래프 렌더링 오류 없는지 확인
 - [ ] 화면 꺼지는 예상 시각 = `wakeTime` 기준 7시간 전으로 계산 맞는지 확인
 - [ ] [수정] → SetUpActivity 복귀 확인
