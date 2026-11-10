@@ -80,7 +80,8 @@ automotive/src/main/
 │   ├── sdk/
 │   │   ├── VehicleManager.kt        # Pleos Vehicle SDK 래퍼 — 배터리·온도·효율·용량
 │   │   ├── LocationManager.kt       # Pleos FusedLocation 래퍼 — GPS (현재 SDK 지원 X -> 기존 android sdk 사용)
-│   │   └── NaviManager.kt           # Pleos NaviHelper 래퍼 — (구현 필요)
+│   │   ├── NaviManager.kt           # Pleos NaviHelper 래퍼 — 즐겨찾기·목적지 조회, 귀가 경로 요청
+│   │   └── HomeRoute.kt             # HOME 즐겨찾기 → RouteInfo 변환 + 귀가 경로 결과 타입
 │   │
 │   ├── dialog/
 │   │   ├── GcTimePickerDialog.kt    # 기상 시각 선택 다이얼로그
@@ -171,6 +172,18 @@ automotive/src/main/
 - 왼쪽: 밤새 배터리 사용량 요약 배너 · 현재/밤새 배터리 카드 · 피드백 (좋았어요/더웠어요/추웠어요)
 - 오른쪽: 현재 시각 (일출 그라디언트 카드) · 집으로 안내 버튼 · 집 도착 예상 시각 및 잔량
 
+**귀가 경로 실행 (`NaviManager.requestHomeRoute`)**
+- [집으로 안내] → `getBookmarkInfo()` → `BookmarkType.HOME` 항목으로 `NaviHelper.requestRoute(RouteInfo)` 호출 → 순정 내비가 경로 안내 시작
+- 결과(`HomeRouteResult`)는 메인 스레드에서 1회 전달, Toast로 안내
+  - `Requested` : `onRouteStarted` 수신 또는 3초 내 오류 없음
+  - `NoHomeBookmark` : 내비에 집 미등록 · `Timeout` : 즐겨찾기 5초 무응답 · `PermissionDenied` · `Failed(NaviErrorCode)`
+- 요청 중 버튼 비활성화 (중복 탭 방지)
+- 필요 권한: `pleos.car.permission.NAVI_ROUTE`(조회), `pleos.car.permission.NAVI_ROUTE_SEARCH`(경로 요청) — 누락 시 SDK가 `SecurityException`을 던짐
+- Pleos Connect v2.1.0 에뮬레이터 실측 동작
+  - 집 미등록이어도 내비는 `HOME` 항목을 좌표 (0,0)·빈 `poiId`로 보냄 → `HomeRoute`에서 미등록으로 판정
+  - 부팅 후 순정 내비 화면을 한 번도 열지 않으면 `navi not ready`로 요청을 보류 → 앱은 5초 후 `Timeout`
+  - `requestRoute` 후 내비가 경로 탐색 → "안내 시작" 카운트다운 → 약 7~8초 뒤 `onRouteStarted` (3초 대기 초과 시 `Requested`로 처리)
+
 ### 6. 차량 데이터 연동 (`VehicleManager`)
 | 데이터 | SDK 메서드 |
 |---|---|
@@ -186,7 +199,6 @@ automotive/src/main/
 | 기능 | 위치 | 비고                                                                           |
 |---|---|------------------------------------------------------------------------------|
 | 기상 알림 | `WakeActivity.onCreate()` | TTS로 할지 뭐로할지 모르겟음                                                            |                                                                         |                                                                           |                                                                            |
-| 집으로 경로 안내 실행 | `WakeActivity` Phase B 버튼 | `naviManager.requestPlaceList` 까지는 구현, `requestRoute(lat, lng)` SDK 메서드 미확인  |
 | 일출 시각 계산 | `GlobalVariables.sunriseTime` | 필드만 선언, 실제 위치 기반 계산 미구현                                                      |
 | 설정값 영속화 | `SetUpActivity` | `wakeTime` · `setTemperatureDeg` 등 앱 재시작 시 초기값으로 리셋됨 (SharedPreferences 미연동) |
 | 실내 온도 제어 | `CampingActivity` | 목표 온도는 설정 가능하나 실제 HVAC 제어 미구현                                                |
@@ -260,6 +272,10 @@ adb logcat -s GNC | grep -E "절전|sleepOverlay|SLEEP"
 #### 4. 기상 화면 Phase A → Phase B 전환
 
 ```bash
+# WakeActivity는 exported=false → 일반 adb shell로는 Permission Denial.
+# Google APIs 이미지는 adb root 후 실행 가능, Pleos Connect 이미지(user 빌드)는 root 불가
+#   → 실제 흐름(밤 계획 → 이대로 잘게요 → 기상 시각 도달)으로 진입
+adb root
 adb shell am start -n com.example.pleostest/.activity.WakeActivity
 adb logcat -s GNC | grep "WakeActivity"
 ```
@@ -267,7 +283,10 @@ adb logcat -s GNC | grep "WakeActivity"
 - [ ] Phase A 진입 — stat 3개(현재·필요·여유 배터리) 올바르게 표시
 - [ ] [일어날게요] → Phase B 전환 애니메이션 없이 즉시 전환 확인
 - [ ] Phase B — 현재 시각이 실시간 반영되는지 확인
-- [ ] Phase B — 집으로 안내 버튼 탭 → 로그에 즐겨찾기 조회 결과 출력 확인
+- [ ] Phase B — 집으로 안내 버튼 탭 → `requestRoute → <집 이름>` 로그 + 순정 내비 경로 안내 시작 + "경로 안내를 시작해요" Toast
+- [ ] 내비에 집 미등록 상태에서 탭 → "집이 등록되어 있지 않아요" Toast, 경로 요청 로그 없음
+- [ ] 내비 서비스 없는 에뮬레이터에서 탭 → 5초 후 "응답하지 않아요" Toast, 크래시 없음
+- [ ] 응답 오기 전 연타 → `이미 진행 중 → 무시` 로그, 요청 1회만 발생
 - [ ] Phase B — 피드백 버튼 선택 → 선택된 버튼 초록 하이라이트, 나머지 기본 배경으로 복귀
 
 ---
@@ -275,6 +294,7 @@ adb logcat -s GNC | grep "WakeActivity"
 #### 5. 밤 계획 화면 (`PlanActivity`)
 
 ```bash
+adb root   # PlanActivity도 exported=false
 adb shell am start -n com.example.pleostest/.activity.PlanActivity
 adb logcat -s GNC | grep "PlanActivity"
 ```
