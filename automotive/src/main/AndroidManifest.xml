@@ -3,6 +3,7 @@
 
     <!--  HVAC Permission  -->
     <uses-permission android:name="pleos.car.permission.CAR_CLIMATE" />
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_CLIMATE" />
     <!--  EvBattery  -->
     <uses-permission android:name="pleos.car.permission.CAR_ENERGY" />
     <!-- Car Info 혹시 hvac 자동 운용시 차량 cc에 맞는거 제공해줘야할 필요가 있어서 -->
