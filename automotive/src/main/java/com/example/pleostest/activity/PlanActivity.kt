@@ -15,6 +15,7 @@ import com.example.pleostest.sdk.OvernightHvac
 import com.example.pleostest.sdk.NaviManager
 import com.example.pleostest.sdk.TripEstimate
 import com.example.pleostest.sdk.TripResult
+import com.example.pleostest.sdk.WakeSequence
 import com.example.pleostest.ui.BatteryBudgetChartView
 import com.example.pleostest.util.GNCLog
 
@@ -173,7 +174,11 @@ class PlanActivity : BaseActivity() {
             val cal = java.util.Calendar.getInstance()
             GlobalVariables.campingStartMin =
                 cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE)
-            GNCLog.i("[PlanActivity] 이대로 잘게요 탭 → campingStartMin=${GlobalVariables.campingStartMin}")
+            // 이번 밤의 기상 시각 — 23시에 자고 06:30에 깨는 것처럼 날짜가 바뀌는 경우 포함
+            GlobalVariables.wakeAtMs = WakeSequence.nextWakeAt(cal.timeInMillis, GlobalVariables.wakeTime)
+            GlobalVariables.wakeAlarmTriggered = false
+            GlobalVariables.snoozeUntilMs = 0L
+            GNCLog.i("[PlanActivity] 이대로 잘게요 탭 → campingStartMin=${GlobalVariables.campingStartMin}, 기상까지 ${(GlobalVariables.wakeAtMs - cal.timeInMillis) / 60_000}분 (기상 15분 전부터 기상 시퀀스)")
             saveSleepRecord()
             startActivity(android.content.Intent(this, CampingActivity::class.java))
         }
