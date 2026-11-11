@@ -24,6 +24,22 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- 기상 시퀀스: 조명·창문·시트/핸들 열선·미러 열선 제어 (Pleos, 모두 normal)
+         공조 제어 CONTROL_CAR_CLIMATE는 위 HVAC 권한에 선언됨 -->
+    <uses-permission android:name="pleos.car.permission.CAR_LIGHTS" />
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_LIGHTS" />
+    <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_WINDOWS" />
+    <uses-permission android:name="pleos.car.permission.CAR_SEATS" />
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_SEATS" />
+    <uses-permission android:name="pleos.car.permission.CAR_MIRRORS" />
+    <uses-permission android:name="pleos.car.permission.CONTROL_CAR_MIRRORS" />
+    <!-- 사이드미러 접기/펴기(VHAL MIRROR_FOLD): signature|privileged — 일반 설치로는 부여되지 않음.
+         시스템 앱으로 탑재될 때를 위해 선언만 해 둠 (CarControl.unfoldMirrors가 권한 확인 후 시도) -->
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_MIRRORS" />
+    <!-- 기상 알림 (Android 13+ 런타임 권한) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <uses-feature
         android:name="android.hardware.type.automotive"
         android:required="true" />

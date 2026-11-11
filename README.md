@@ -81,7 +81,9 @@ automotive/src/main/
 │   │   ├── VehicleManager.kt        # Pleos Vehicle SDK 래퍼 — 배터리·온도·효율·용량
 │   │   ├── LocationManager.kt       # Pleos FusedLocation 래퍼 — GPS (현재 SDK 지원 X -> 기존 android sdk 사용)
 │   │   ├── NaviManager.kt           # Pleos NaviHelper 래퍼 — 즐겨찾기·목적지 조회, 귀가 경로 요청
-│   │   └── HomeRoute.kt             # HOME 즐겨찾기 → RouteInfo 변환 + 귀가 경로 결과 타입
+│   │   ├── HomeRoute.kt             # HOME 즐겨찾기 → RouteInfo 변환 + 귀가 경로 결과 타입
+│   │   ├── HomeTrip.kt              # 귀가 예측(requestTrip) 요청·응답 변환 + 결과 타입
+│   │   └── OvernightHvac.kt         # 밤새 공조 소비 모델 + 지난 밤 실측 보정
 │   │
 │   ├── dialog/
 │   │   ├── GcTimePickerDialog.kt    # 기상 시각 선택 다이얼로그
@@ -141,6 +143,33 @@ automotive/src/main/
 - stat 4개: 현재 배터리 / 아침 예상 / 밤새 사용량 / 귀가 필요량
 - `BatteryBudgetChartView` 커스텀 그래프로 배터리 예산 흐름 표시
 - 화면 꺼지는 예상 시각 표시 (기상 시각 기준 7시간 전)
+
+**귀가 필요량 — 순정 내비 예측 (`NaviManager.requestTripEstimate`)**
+- 화면 진입 시 앱 추정식으로 먼저 표시 → `NaviHelper.requestTrip(TripRequest)` → `onTripInfo`가 오면 다시 그림 (경로 안내는 시작하지 않음)
+- 대상: 고른 목적지 좌표, 없으면(0,0) 내비 HOME 즐겨찾기 — 이 경우 HOME을 귀가 목적지로 채택
+- `집까지 필요 % = 현재 배터리 − TripInfo.estimatedSocAtDest`, 거리 = `TripInfo.distance` (실제 도로 거리)
+  - 내비 화면의 "도착 시 배터리"와 같은 값 (실측: 서울역 KTX 23.8km, 100% → 96%, 필요 4% / 추정식은 47%)
+- 표시: stat 라벨 "집까지 필요 · 내비", 그래프 "집까지 N%(내비 예측)"
+- 내비 예측을 못 쓰면 기존 추정식(`목적지km ÷ 전비 ÷ 용량`) 유지: 10초 무응답, 집 미등록, 권한 없음, `onError`, 차량 배터리 미수신(기본값 80%와 섞지 않음)
+- 필요 권한: `pleos.car.permission.NAVI_ROUTE` (`requestTrip`도 이 권한으로 검사)
+- `TripInfo` 실측 단위: `distance` m · `eta` 초 · `energyConsumption` Wh
+- 내비 서비스 연결(`initialize` 성공 콜백) 전 요청은 큐에 보관 후 연결 시 실행
+- 주의: 내비는 `onTripInfo`를 연결된 모든 클라이언트에 보냄 → 대기 중 다른 앱이 `requestTrip`하면 그 결과를 받을 수 있음
+
+**밤새 공조 소비량 — 기본 모델 × 내 차 실측 보정 (`sdk/OvernightHvac.kt`)**
+- Pleos SDK에 공조 소비 전력·예측 API 없음 (Vehicle SDK 2.3.2 HVAC는 상태 조회·제어만, NaviHelper는 주행 에너지만) → 앱이 추정
+- 기본 모델 (0.2 ~ 4.0kW 제한)
+  - 난방: `0.3kW + 0.06kW/°C × (설정 − 외기) − 0.08kW × 추가 인원`
+    - 공개 실측(테슬라 혹한 차박, 실내 20°C: −13°C 1.45 / −17°C 2.4 / −22°C 3.8 kWh·h) 범위에 맞춘 계수
+  - 냉방: `0.3kW + 0.03kW/°C × (외기 − 설정) + 0.04kW × 추가 인원` — 실측 근거 없는 가정치 (기존 식은 냉방을 0으로 봤음)
+- 실측 보정: [이대로 잘게요] 시 시작 배터리 %·예측 kW 기록 → [일어날게요] 시 종료 배터리 % 기록 (`sleep_records` v3)
+  - 다음 계획부터 `실제 소비 ÷ (예측 kW × 실제 잔 시간)`의 중앙값으로 보정, 기록이 적으면 1.0 쪽으로: `1 + (중앙값 − 1) × n ÷ (n + 2)`, 0.5 ~ 2.5 제한
+  - 제외: 2시간 미만(1% 해상도 = 0.77kWh), 배터리가 늘어난 밤(충전), 시작/종료 배터리 미수신
+  - 표시: stat 라벨 "밤새 사용 · 내 기록 N밤 보정"
+- 기상 화면 "밤새 사용"은 예측값 대신 실측(잠들 때 % − 지금 %), 모르면 예측값
+- 주의: 앱은 차량 공조를 제어하지 않음 → 사용자가 차에서 같은 온도로 AUTO를 켜고 유틸리티 모드를 유지해야 모델 전제("설정 온도 유지")가 맞음
+- AAOS VHAL `EV_BATTERY_INSTANTANEOUS_CHARGE_RATE`(순간 충방전 전력)는 `android.car.permission.CAR_ENERGY`(dangerous)로 앱에서 읽기 가능함을 확인
+  - 단, 에뮬레이터는 0W 고정이라 공조 연동 여부 미검증 · 차량 전체 소비량이며 예측값 아님 → 실차에서 추정식 보정용 후보
 - [수정] → SetUpActivity 복귀
 - [이대로 잘게요] → `campingStartMin` 기록 + `SleepRecord` DB 저장 → CampingActivity 진입
 
@@ -156,17 +185,43 @@ automotive/src/main/
 > **테스트 주의**: `SLEEP_DELAY_MS`가 현재 **5초**로 설정되어 있음.  
 > 실기기 배포 전 `5 * 60 * 1000L` (5분)으로 복구 필요.
 
-### 4. 기상 감지 (`CarDataService`)
-- 앱 실행 시 Foreground Service로 시작, 60초 간격 폴링
-- 조건: `isCampingMode == true` && `wakeAlarmTriggered == false` && `현재시각 >= snoozeUntilMs` && `현재시각(분) >= wakeTime(분)`
-- 조건 충족 시 `WakeActivity` 시작 (`FLAG_ACTIVITY_NEW_TASK`)
-- 스누즈 시 `wakeAlarmTriggered = false`로 리셋 → 5분 후 재감지
+### 4. 기상 시퀀스 (`CarDataService` → `WakeSequenceRunner` → `CarControl`)
+잠들 때(`이대로 잘게요`) 다음에 오는 기상 시각을 `wakeAtMs`로 계산(자정 넘김 처리)하고, 기상 15분 전부터 차가 단계적으로 깨운다.
+
+| 시각 | 동작 | 조건 |
+|---|---|---|
+| 15분 전 | 공조 켜기 · 설정 온도 · 앞유리 성에 제거 · 뒷유리 열선 (풍향은 유리+발, 차가 지원할 때) | 항상 (출발 안전 — 배터리 절약 모드여도 수행) |
+| 15분 전 | 사이드미러 열선 | 바깥 ≤ 5°C |
+| 10분 전 | 핸들 열선 · 시트 열선 (운전석 + 착좌 센서가 "앉음"인 앞좌석만, 중간 단계) | 바깥 ≤ 10°C |
+| 10분 전 | 시트 통풍 | 바깥 ≥ 26°C |
+| 5분 전 → 정각 | 앰비언트 조명 5% → 60% (제곱 곡선으로 처음엔 아주 천천히), 색은 일출처럼 주황 → 따뜻한 흰색 | 항상 |
+| 5분 전 | 외기 유입 + 송풍 한 단계 ↑ (범위 절반까지) | 항상 |
+| 5분 전 → 정각 | 앞 창문 살짝(이동 범위 10%) 열었다가 정각에 원래 위치로 | 5°C ≤ 바깥 ≤ 30°C, 이미 열려 있으면 건드리지 않음 |
+| 정각 | 성에 제거 끄기 · 공조 오토 · 사이드미러 펴기 · 알림 + 음성 안내(Pleos TTS 온디바이스) + 기상 화면 | |
+
+- **배터리 절약 모드**: 귀가 필요 + 여유를 빼고 남는 배터리가 5% 미만이면 열선류 생략
+- **바깥 온도 미상**: 온도 조건이 붙은 동작(열선·통풍·창문)은 하지 않음
+- **5분만 더**: 조명이 다시 은은하게 → 5분 동안 다시 밝아지며 정각에 재알림 (준비 동작은 반복 안 함)
+- **일어날게요**: 남은 성에 제거·창문 정리, 미러 열선 끄기, 조명·내외기·송풍을 시퀀스 직전 상태로 복원 (시트·핸들 열선은 곧 운전하므로 유지)
+- 차마다 지원 기능·범위가 달라 시작 시 capability를 먼저 조회하고 그 범위 안에서만 값을 씀 (예: 앞좌석 시트 온도 -3..3은 양수 쪽만 사용)
+- 기상 화면 Phase A에 "깨우면서 차가 한 일" 카드 (✓ 완료 · — 이 차 미지원 · ✕ 권한 없음/실패), 수면 오버레이에 "기상 준비 중 · {단계}"
+
+**사이드미러 펴기의 한계**: Pleos Vehicle SDK에는 미러 접기/펴기 API가 없다(사이드미러는 열선만). AAOS VHAL `MIRROR_FOLD`는 있지만
+`android.car.permission.CONTROL_CAR_MIRRORS`(signature|privileged)가 필요해 일반 설치 앱은 받을 수 없다 → 항상 "권한 없음".
+시스템 앱으로 탑재되면 `CarControl.unfoldMirrors`가 그대로 동작하도록 코드와 권한 선언은 남겨 둠.
+
+**시연 (디버그 빌드만)**: 캠핑 화면에서 "기상까지"를 길게 누르면 지금 조건으로, "바깥"을 길게 누르면 영하 5°C 겨울 조건으로
+기상 시퀀스를 15배속 실행 (15분 → 1분).
+
+**에뮬레이터(Pleos Connect, Virtual Console) 실측**: 성에 제거(앞/뒤)·설정 온도·송풍·외기·공조 오토·앰비언트 밝기/색·창문·핸들 열선·시트 열선 모두
+Virtual Console 상태에 반영됨. 풍향은 지원 목록이 비어 와서 건너뜀. 창문 위치는 0..10이고 0이 닫힘(에뮬레이터 기본값은 10=완전히 열림).
 
 ### 5. 기상 화면 (`WakeActivity`)
 **Phase A — 기상 알람**
 - 현재 배터리 / 귀가 필요 배터리 / 여유 배터리 3개 stat 카드
-- [5분 더] → 스누즈 + CampingActivity 수면 오버레이 복귀
-- [일어날게요] → Phase B 전환
+- 깨우면서 차가 한 일 카드 (기상 시퀀스 진행 결과)
+- [5분 더] → 기상 시퀀스 스누즈 + CampingActivity 수면 오버레이 복귀
+- [일어날게요] → 기상 시퀀스 정리(원래 상태 복원) + Phase B 전환
 
 **Phase B — 출발 준비**
 - 왼쪽: 밤새 배터리 사용량 요약 배너 · 현재/밤새 배터리 카드 · 피드백 (좋았어요/더웠어요/추웠어요)
@@ -198,7 +253,6 @@ automotive/src/main/
 
 | 기능 | 위치 | 비고                                                                           |
 |---|---|------------------------------------------------------------------------------|
-| 기상 알림 | `WakeActivity.onCreate()` | TTS로 할지 뭐로할지 모르겟음                                                            |                                                                         |                                                                           |                                                                            |
 | 일출 시각 계산 | `GlobalVariables.sunriseTime` | 필드만 선언, 실제 위치 기반 계산 미구현                                                      |
 | 설정값 영속화 | `SetUpActivity` | `wakeTime` · `setTemperatureDeg` 등 앱 재시작 시 초기값으로 리셋됨 (SharedPreferences 미연동) |
 | 실내 온도 제어 | `CampingActivity` | 목표 온도는 설정 가능하나 실제 HVAC 제어 미구현                                                |
@@ -301,6 +355,9 @@ adb logcat -s GNC | grep "PlanActivity"
 
 - [ ] SetUpActivity에서 [밤 계획 만들기] → PlanActivity 진입 확인
 - [ ] stat 4개 (현재·아침·밤새 사용·귀가 필요) 올바르게 표시되는지 확인
+- [ ] 내비에 집 등록 상태에서 진입 → `[NaviManager] 귀가 예측 결과: Estimated(...)` 로그 + "집까지 필요 · 내비" 표시 확인
+- [ ] 집 미등록 상태 → `NoHomeBookmark` 로그 + 추정식 값 유지 확인
+- [ ] 밤 계획 후 [수정]으로 복귀 → 설정 화면 목적지가 내비 HOME 이름·도로 거리로 갱신됐는지 확인
 - [ ] `BatteryBudgetChartView` 그래프 렌더링 오류 없는지 확인
 - [ ] 화면 꺼지는 예상 시각 = `wakeTime` 기준 7시간 전으로 계산 맞는지 확인
 - [ ] [수정] → SetUpActivity 복귀 확인

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,10 +13,13 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import com.example.pleostest.R
 import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.global.GlobalVariables.SLEEP_DELAY_MS
+import com.example.pleostest.sdk.WakeAction
+import com.example.pleostest.sdk.WakeSequenceStatus
 import com.example.pleostest.service.CarDataService
 import com.example.pleostest.util.GNCLog
 import java.util.Calendar
@@ -37,6 +41,11 @@ class CampingActivity : BaseActivity() {
         }
     }
 
+    // 기상 시퀀스 진행 → 수면 오버레이 상태 문구 갱신
+    private val sequenceReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = populateViews()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camping)
@@ -47,6 +56,9 @@ class CampingActivity : BaseActivity() {
         super.onResume()
         registerReceiver(dataReceiver,
             IntentFilter(CarDataService.ACTION_DATA_UPDATED),
+            RECEIVER_NOT_EXPORTED)
+        registerReceiver(sequenceReceiver,
+            IntentFilter(CarDataService.ACTION_WAKE_SEQUENCE_UPDATED),
             RECEIVER_NOT_EXPORTED)
         GlobalVariables.isCampingMode = true
         GNCLog.i("[CampingActivity] 캠핑 모드 활성 — wakeTime=${GlobalVariables.wakeTime}, temp=${GlobalVariables.setTemperatureDeg}°C, campingStartMin=${GlobalVariables.campingStartMin}")
@@ -63,6 +75,7 @@ class CampingActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         unregisterReceiver(dataReceiver)
+        unregisterReceiver(sequenceReceiver)
         mainHandler.removeCallbacks(sleepRunnable)
         GNCLog.i("[CampingActivity] 슬립 타이머 중지")
     }
@@ -128,6 +141,27 @@ class CampingActivity : BaseActivity() {
             visibility = View.VISIBLE
             setOnClickListener { finish() }
         }
+        // 시연용 (디버그 빌드만): "기상까지" 길게 누르면 기상 시퀀스를 15배속으로 — 1분 만에 정각
+        if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            findViewById<View>(R.id.gc_stat_until_wake).setOnLongClickListener {
+                GNCLog.i("[CampingActivity] 기상 시퀀스 시연 시작 (15배속)")
+                CarDataService.send(this, CarDataService.ACTION_WAKE_DEMO) {
+                    putExtra(CarDataService.EXTRA_DEMO_SPEED, 15.0)
+                }
+                Toast.makeText(this, R.string.gc_wake_demo_started, Toast.LENGTH_SHORT).show()
+                true
+            }
+            // "바깥" 길게 누르면 영하 5°C 겨울 시나리오 (열선·미러 열선 포함)
+            findViewById<View>(R.id.gc_stat_outside).setOnLongClickListener {
+                GNCLog.i("[CampingActivity] 기상 시퀀스 겨울 시연 시작 (-5°C, 15배속)")
+                CarDataService.send(this, CarDataService.ACTION_WAKE_DEMO) {
+                    putExtra(CarDataService.EXTRA_DEMO_SPEED, 15.0)
+                    putExtra(CarDataService.EXTRA_DEMO_OUTSIDE_C, -5f)
+                }
+                Toast.makeText(this, R.string.gc_wake_demo_started, Toast.LENGTH_SHORT).show()
+                true
+            }
+        }
         findViewById<TextView>(R.id.gc_action_stop_camping).setOnClickListener {
             GNCLog.i("[CampingActivity] 차박 종료 버튼 탭 → 앱 종료")
             GlobalVariables.isCampingMode = false
@@ -160,8 +194,10 @@ class CampingActivity : BaseActivity() {
     }
 
     private fun updateSleepOverlay(overlay: View) {
+        val sequence = CarDataService.wakeStatus
         overlay.findViewById<TextView>(R.id.gc_sleep_status).text =
-            getString(R.string.gc_sleep_status,
+            if (sequence.active) getString(R.string.gc_sleep_status_waking, currentWakeStep(sequence))
+            else getString(R.string.gc_sleep_status,
                 "${GlobalVariables.setTemperatureDeg}°C",
                 GlobalFunction.batteryPct())
 
@@ -190,6 +226,21 @@ class CampingActivity : BaseActivity() {
         else total
         val progress = if (duration > 0) (elapsed * 1000 / duration).coerceIn(0, 1000) else 0
         overlay.findViewById<ProgressBar>(R.id.gc_sleep_progress).progress = progress
+    }
+
+    /** 지금 진행 중이거나 가장 최근에 끝난 기상 단계 이름 */
+    private fun currentWakeStep(status: WakeSequenceStatus): String {
+        val item = status.items.lastOrNull {
+            it.action != WakeAction.ALARM && it.state != WakeSequenceStatus.State.PENDING
+        } ?: return getString(R.string.gc_wake_act_waiting)
+        return getString(when (item.action) {
+            WakeAction.DEFROST_ON, WakeAction.MIRROR_HEAT_ON -> R.string.gc_wake_act_defrost
+            WakeAction.STEERING_HEAT_ON, WakeAction.SEAT_HEAT_ON -> R.string.gc_wake_act_seat_heat
+            WakeAction.SEAT_VENT_ON -> R.string.gc_wake_act_seat_vent
+            WakeAction.LIGHT_RAMP -> R.string.gc_wake_act_light
+            WakeAction.FRESH_AIR, WakeAction.WINDOW_CRACK -> R.string.gc_wake_act_fresh_air
+            else -> R.string.gc_wake_act_alarm
+        })
     }
 
     private fun remainingMinutes(): Int {

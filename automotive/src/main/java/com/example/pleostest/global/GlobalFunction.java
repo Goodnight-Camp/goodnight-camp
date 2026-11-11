@@ -4,6 +4,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.pleostest.R;
+import com.example.pleostest.sdk.HvacCalibration;
+import com.example.pleostest.sdk.OvernightHvac;
 import com.example.pleostest.util.GNCLog;
 
 import java.util.Calendar;
@@ -25,10 +27,20 @@ public class GlobalFunction {
         public final boolean isViable;
         public final int startTimeMin;
         public final int wakeTimeMin;
+        /** true = neededForHomePct가 순정 내비 예측값, false = 앱 자체 추정식 */
+        public final boolean neededFromNavi;
+        /** 보정 전 기본 모델의 평균 공조 소비 전력(kW) — 수면 기록에 저장해 다음 보정에 사용 */
+        public final double baseHvacKw;
+        /** 공조 소비 보정에 쓴 지난 밤 수 (0 = 보정 없음) */
+        public final int calibrationNights;
 
         public BatteryBudgetResult(int currentPct, int morningPct, int overnightUsePct,
                                    int neededForHomePct, int reservePct, boolean isViable,
-                                   int startTimeMin, int wakeTimeMin) {
+                                   int startTimeMin, int wakeTimeMin, boolean neededFromNavi,
+                                   double baseHvacKw, int calibrationNights) {
+            this.neededFromNavi = neededFromNavi;
+            this.baseHvacKw = baseHvacKw;
+            this.calibrationNights = calibrationNights;
             this.currentPct = currentPct;
             this.morningPct = morningPct;
             this.overnightUsePct = overnightUsePct;
@@ -98,6 +110,16 @@ public class GlobalFunction {
         return sb.length() > 0 ? sb.toString() : "-";
     }
 
+    /** 차량에서 실제로 받은 배터리 %. 아직 못 받았으면 null (기본값 80을 쓰지 않음) */
+    public static Integer batteryPctOrNull() {
+        String digits = batteryValueStr();
+        try {
+            return digits.equals("-") ? null : Integer.parseInt(digits);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     /** curBattery 문자열에서 정수 추출 — 파싱 실패 시 기본값 80 반환 */
     public static int batteryPct() {
         String digits = batteryValueStr();
@@ -115,12 +137,20 @@ public class GlobalFunction {
     /**
      * GlobalVariables에서 직접 읽어 밤새 배터리 소비 예산을 계산합니다.
      *
-     * 공조 소비 모델:
-     *   hvacKw = 0.3(대기) + (온도차/10) * 0.6 - (인원-1) * 0.08
+     * 공조 소비 모델: {@link OvernightHvac} (난방·냉방 기본 모델 × 내 차 실측 보정 계수)
      * 귀가 필요 에너지:
      *   neededKwh = destinationKm / efficiencyKmPerKwh
      */
     public static BatteryBudgetResult calculateBatteryBudget() {
+        return calculateBatteryBudget(-1, HvacCalibration.NONE);
+    }
+
+    /**
+     * @param naviNeededForHomePct 순정 내비 requestTrip 예측으로 구한 "집까지 필요 %".
+     *                             0 이상이면 자체 추정식 대신 이 값을 쓴다. -1 = 없음(추정식 사용).
+     * @param calibration          지난 밤 실측으로 구한 공조 소비 보정 계수
+     */
+    public static BatteryBudgetResult calculateBatteryBudget(int naviNeededForHomePct, HvacCalibration calibration) {
         int currentPct = batteryPct();
         double capacityKwh = Math.max(GlobalVariables.batteryCapacityWh / 1000.0, 1.0);
         double overnightHrs = overnightHours();
@@ -128,11 +158,10 @@ public class GlobalFunction {
 
         GNCLog.i("[GlobalFunction] 배터리 예산 계산 시작 — battery=" + currentPct + "%, capacity=" + capacityKwh + "kWh, outside=" + outsideCelsius + "°C, setTemp=" + GlobalVariables.setTemperatureDeg + "°C, guests=" + GlobalVariables.guestCount + ", dest=" + GlobalVariables.destinationDistanceKm + "km, efficiency=" + GlobalVariables.efficiencyKmPerKwh + "km/kWh, overnightHrs=" + overnightHrs);
 
-        // 공조 소비 kW
-        double tempDiff = Math.max(GlobalVariables.setTemperatureDeg - outsideCelsius, 0.0);
-        double hvacKw = 0.3 + (tempDiff / 10.0) * 0.6 - (GlobalVariables.guestCount - 1) * 0.08;
-        hvacKw = Math.min(Math.max(hvacKw, 0.2), 4.0);
-        GNCLog.d("[GlobalFunction] HVAC 소비 — tempDiff=" + tempDiff + "°C, hvacKw=" + String.format(Locale.US, "%.3f", hvacKw) + "kW");
+        // 공조 소비 kW — 기본 모델 × 실측 보정
+        double baseKw = OvernightHvac.baseKw(outsideCelsius, GlobalVariables.setTemperatureDeg, GlobalVariables.guestCount);
+        double hvacKw = baseKw * calibration.getFactor();
+        GNCLog.d("[GlobalFunction] HVAC 소비 — baseKw=" + String.format(Locale.US, "%.3f", baseKw) + "kW × 보정 " + String.format(Locale.US, "%.2f", calibration.getFactor()) + "(" + calibration.getNights() + "밤) = " + String.format(Locale.US, "%.3f", hvacKw) + "kW");
 
         // 밤새 소비 %
         double overnightKwh = hvacKw * overnightHrs;
@@ -140,12 +169,20 @@ public class GlobalFunction {
         int morningPct = Math.max(currentPct - overnightPct, 0);
         GNCLog.d("[GlobalFunction] 밤새 소비 — overnightKwh=" + String.format(Locale.US, "%.2f", overnightKwh) + "kWh, overnightPct=" + overnightPct + "%, morningPct=" + morningPct + "%");
 
-        // 귀가 필요 %
-        double eff = Math.max(GlobalVariables.efficiencyKmPerKwh, 1.0);
-        double neededKwh = GlobalVariables.destinationDistanceKm / eff;
-        int neededForHomePct = (int) Math.min(Math.max((neededKwh / capacityKwh) * 100, 0), 100);
+        // 귀가 필요 % — 내비 예측이 있으면 우선, 없으면 직선거리 기반 추정식
+        boolean fromNavi = naviNeededForHomePct >= 0;
+        int neededForHomePct;
+        if (fromNavi) {
+            neededForHomePct = Math.min(naviNeededForHomePct, 100);
+            GNCLog.d("[GlobalFunction] 귀가 필요 — 내비 예측 사용: " + neededForHomePct + "%");
+        } else {
+            double eff = Math.max(GlobalVariables.efficiencyKmPerKwh, 1.0);
+            double neededKwh = GlobalVariables.destinationDistanceKm / eff;
+            neededForHomePct = (int) Math.min(Math.max((neededKwh / capacityKwh) * 100, 0), 100);
+            GNCLog.d("[GlobalFunction] 귀가 필요 — 추정식 사용: neededKwh=" + String.format(Locale.US, "%.2f", neededKwh) + "kWh → " + neededForHomePct + "%");
+        }
         int reservePct = Math.min(neededForHomePct + GlobalVariables.marginBatteryPct, 100);
-        GNCLog.d("[GlobalFunction] 귀가 필요 — neededKwh=" + String.format(Locale.US, "%.2f", neededKwh) + "kWh, neededForHomePct=" + neededForHomePct + "%, margin=" + GlobalVariables.marginBatteryPct + "%, reservePct=" + reservePct + "%");
+        GNCLog.d("[GlobalFunction] 귀가 필요 — neededForHomePct=" + neededForHomePct + "%, margin=" + GlobalVariables.marginBatteryPct + "%, reservePct=" + reservePct + "%");
 
         Calendar cal = Calendar.getInstance();
         int startMin = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE);
@@ -161,7 +198,10 @@ public class GlobalFunction {
                 reservePct,
                 viable,
                 startMin,
-                wakeMin
+                wakeMin,
+                fromNavi,
+                baseKw,
+                calibration.getNights()
         );
     }
 

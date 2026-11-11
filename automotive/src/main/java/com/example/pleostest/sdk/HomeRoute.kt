@@ -27,16 +27,23 @@ object HomeRoute {
 
     private const val DEFAULT_HOME_NAME = "집"
 
+    /** 실제 등록된 HOME 즐겨찾기. 없거나 미등록 자리표시자뿐이면 null */
+    fun findHome(bookmarks: List<BookmarkInfo>): BookmarkInfo? =
+        bookmarks.firstOrNull { it.category == BookmarkType.HOME && it.isRegistered() }
+
+    /** HOME 즐겨찾기 이름. 비어 있으면 "집" */
+    fun displayName(home: BookmarkInfo): String =
+        home.name.takeIf { it.isNotBlank() } ?: DEFAULT_HOME_NAME
+
     /** HOME 즐겨찾기가 없거나 미등록 자리표시자뿐이면 null */
     fun buildRouteInfo(bookmarks: List<BookmarkInfo>): RouteInfo? {
-        val home = bookmarks.firstOrNull { it.category == BookmarkType.HOME && it.isRegistered() }
-            ?: return null
+        val home = findHome(bookmarks) ?: return null
         return RouteInfo(
             latitude = home.latitude,
             longitude = home.longitude,
             displayLatitude = home.displayLatitude,
             displayLongitude = home.displayLongitude,
-            poiName = home.name.takeIf { it.isNotBlank() } ?: DEFAULT_HOME_NAME,
+            poiName = displayName(home),
             poiId = home.poiId,
             address = home.address,
             poiSubId = home.poiSubId.orEmpty(),
