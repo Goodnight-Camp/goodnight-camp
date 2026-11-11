@@ -121,7 +121,8 @@ class BatteryBudgetChartView @JvmOverloads constructor(
 
         // 4. reserve 밴드 텍스트
         val marginPct = r.reservePct - r.neededForHomePct
-        val bandText = "집까지 ${r.neededForHomePct}% + 여유 ${marginPct}%  ·  이 아래는 쓰지 않아요"
+        val source = if (r.neededFromNavi) "(내비 예측)" else ""
+        val bandText = "집까지 ${r.neededForHomePct}%$source + 여유 ${marginPct}%  ·  이 아래는 쓰지 않아요"
         canvas.drawText(bandText, cLeft + 10f * d, reserveY + 18f * s, reserveBandTextPaint)
 
         // 5. 배터리 라인

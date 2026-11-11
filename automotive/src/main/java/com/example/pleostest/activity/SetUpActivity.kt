@@ -48,6 +48,21 @@ class SetUpActivity : BaseActivity() {
         } else {
             GNCLog.w("[SetUpActivity] 위치 권한 거부 — 헤더 위치 표시 불가")
         }
+        requestNotificationPermission()
+    }
+
+    // 기상 알림용 — 위치 권한 요청이 끝난 뒤 이어서 (동시에 두 다이얼로그를 띄우지 않음)
+    private val notificationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        GNCLog.i("[SetUpActivity] 알림 권한 ${if (granted) "허용" else "거부 — 기상 시엔 화면·음성으로만 깨움"}")
+    }
+
+    private fun requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED) return
+        notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +74,7 @@ class SetUpActivity : BaseActivity() {
         ) {
             GNCLog.i("[SetUpActivity] 위치 권한 이미 허용 → 위치 업데이트 시작")
             startLocationUpdates()
+            requestNotificationPermission()
         } else {
             GNCLog.i("[SetUpActivity] 위치 권한 미허용 → 권한 요청")
             locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -71,10 +87,12 @@ class SetUpActivity : BaseActivity() {
         GNCLog.d("[SetUpActivity] CarDataService 브로드캐스트 수신 등록")
 
         naviManager.initialize()
-        naviManager.onDestination = { name, km ->
+        naviManager.onDestination = { name, km, lat, lng ->
             GNCLog.i("[SetUpActivity] NaviManager 목적지 갱신 → name=$name, km=$km")
             GlobalVariables.destinationName = name
             GlobalVariables.destinationDistanceKm = km
+            GlobalVariables.destinationLat = lat
+            GlobalVariables.destinationLng = lng
             runOnUiThread { updateDestinationRow() }
         }
 
@@ -91,6 +109,7 @@ class SetUpActivity : BaseActivity() {
             GNCLog.d("[SetUpActivity] 차량 데이터 존재 → 즉시 갱신")
             refreshVehicleStats()
         }
+        updateDestinationRow()   // 밤 계획에서 내비 예측으로 목적지·거리가 바뀌었을 수 있음
         loadSleepRecords()
         refreshHeaderLocation()
     }
@@ -148,10 +167,12 @@ class SetUpActivity : BaseActivity() {
         // 목적지 변경 → 검색 다이얼로그
         findViewById<TextView>(R.id.gc_destination_change).setOnClickListener {
             GNCLog.i("[SetUpActivity] 목적지 변경 버튼 탭")
-            DestinationSearchDialog(this) { name, km ->
+            DestinationSearchDialog(this) { name, km, lat, lng ->
                 GNCLog.i("[SetUpActivity] 목적지 선택 완료 → name=$name, km=$km (이전: ${GlobalVariables.destinationName})")
                 GlobalVariables.destinationName = name
                 GlobalVariables.destinationDistanceKm = km
+                GlobalVariables.destinationLat = lat
+                GlobalVariables.destinationLng = lng
                 updateDestinationRow()
             }.show()
         }
@@ -335,6 +356,8 @@ class SetUpActivity : BaseActivity() {
         GNCLog.i("[SetUpActivity] 수면 기록 적용 — id=${record.id}, dest=${record.destinationName}, wakeTime=${record.wakeTime}, temp=${record.setTemperatureDeg}°C, guests=${record.guestCount}명, reserve=${record.marginBatteryPct}%")
         GlobalVariables.destinationName = record.destinationName
         GlobalVariables.destinationDistanceKm = record.destinationDistanceKm
+        GlobalVariables.destinationLat = record.destinationLat
+        GlobalVariables.destinationLng = record.destinationLng
         GlobalVariables.wakeTime = record.wakeTime
         GlobalVariables.setTemperatureDeg = record.setTemperatureDeg
         GlobalVariables.marginBatteryPct = record.marginBatteryPct

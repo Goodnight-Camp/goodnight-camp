@@ -20,6 +20,9 @@ public class GlobalVariables {
     // 목적지
     public static String destinationName = "집 · 마포구";
     public static int destinationDistanceKm = 182;
+    // 목적지 좌표 — (0,0)이면 미상 → 내비 HOME 즐겨찾기로 귀가 예측
+    public static double destinationLat = 0.0;
+    public static double destinationLng = 0.0;
     public static int neededForHomePct = 35;   // 집까지 필요한 배터리 %
 
     // 일출 시간 (위치 기반으로 갱신)
@@ -32,9 +35,13 @@ public class GlobalVariables {
     // 밤 계획 결과 (밤 계획 만들기 이후 채워짐)
     public static int morningBatteryPct = 0;
     public static int overnightUsePct = 0;
+    // 잠들 때 실제 배터리 % (-1 = 미상) — 기상 화면에서 실측 밤새 사용량 계산
+    public static int sleepStartSocPct = -1;
 
     // 캠핑 모드 시작 시각 (분 단위, -1 = 미시작)
     public static int campingStartMin = -1;
+    // 이번 밤의 기상 시각 (epoch ms, 0 = 미정) — 잠들 때 다음에 오는 wakeTime으로 계산 (자정 넘김 처리)
+    public static long wakeAtMs = 0L;
 
     //절전 오버레이 돌입을 위한 인터렉션 무응답 대기 시간
     public static long SLEEP_DELAY_MS = 5 * 1000L;
