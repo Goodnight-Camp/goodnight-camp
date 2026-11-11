@@ -40,6 +40,8 @@ public class GlobalVariables {
 
     // 캠핑 모드 시작 시각 (분 단위, -1 = 미시작)
     public static int campingStartMin = -1;
+    // 이번 밤의 기상 시각 (epoch ms, 0 = 미정) — 잠들 때 다음에 오는 wakeTime으로 계산 (자정 넘김 처리)
+    public static long wakeAtMs = 0L;
 
     //절전 오버레이 돌입을 위한 인터렉션 무응답 대기 시간
     public static long SLEEP_DELAY_MS = 5 * 1000L;

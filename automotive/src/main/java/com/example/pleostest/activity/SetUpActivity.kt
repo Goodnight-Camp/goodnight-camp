@@ -48,6 +48,21 @@ class SetUpActivity : BaseActivity() {
         } else {
             GNCLog.w("[SetUpActivity] 위치 권한 거부 — 헤더 위치 표시 불가")
         }
+        requestNotificationPermission()
+    }
+
+    // 기상 알림용 — 위치 권한 요청이 끝난 뒤 이어서 (동시에 두 다이얼로그를 띄우지 않음)
+    private val notificationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        GNCLog.i("[SetUpActivity] 알림 권한 ${if (granted) "허용" else "거부 — 기상 시엔 화면·음성으로만 깨움"}")
+    }
+
+    private fun requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED) return
+        notificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +74,7 @@ class SetUpActivity : BaseActivity() {
         ) {
             GNCLog.i("[SetUpActivity] 위치 권한 이미 허용 → 위치 업데이트 시작")
             startLocationUpdates()
+            requestNotificationPermission()
         } else {
             GNCLog.i("[SetUpActivity] 위치 권한 미허용 → 권한 요청")
             locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)

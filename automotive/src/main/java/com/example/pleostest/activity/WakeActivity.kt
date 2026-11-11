@@ -16,6 +16,8 @@ import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.sdk.HomeRouteResult
 import com.example.pleostest.sdk.NaviManager
+import com.example.pleostest.sdk.WakeAction
+import com.example.pleostest.sdk.WakeSequenceStatus
 import com.example.pleostest.service.CarDataService
 import com.example.pleostest.util.GNCLog
 import java.util.Calendar
@@ -31,6 +33,10 @@ class WakeActivity : BaseActivity() {
         }
     }
 
+    private val sequenceReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = renderWakeSequence()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wake)
@@ -39,8 +45,7 @@ class WakeActivity : BaseActivity() {
         naviManager.initialize()
         setupPhaseA()
         setupPhaseB()
-        // TODO: SDK TTS 사용 or 알림 노래 → PleosTextToSpeech.getInstance(context).speak("기상 시간입니다.")
-        //   SDK 연동 전까지 호출 생략
+        // 정각 알림·음성 안내는 CarDataService(기상 시퀀스)가 이 화면을 띄우면서 함께 처리
     }
 
     override fun onResume() {
@@ -48,13 +53,18 @@ class WakeActivity : BaseActivity() {
         registerReceiver(dataReceiver,
             IntentFilter(CarDataService.ACTION_DATA_UPDATED),
             RECEIVER_NOT_EXPORTED)
+        registerReceiver(sequenceReceiver,
+            IntentFilter(CarDataService.ACTION_WAKE_SEQUENCE_UPDATED),
+            RECEIVER_NOT_EXPORTED)
         refreshStats()
+        renderWakeSequence()
         refreshHeaderLocation()
     }
 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(dataReceiver)
+        unregisterReceiver(sequenceReceiver)
     }
 
     override fun onDestroy() {
@@ -69,18 +79,18 @@ class WakeActivity : BaseActivity() {
     private fun setupPhaseA() {
         GNCLog.d("[WakeActivity] Phase A 셋업")
 
-        // 5분만 더 → 스누즈 플래그 + CampingActivity 수면 오버레이 복귀
+        // 5분만 더 → 기상 시퀀스 스누즈(조명 다시 은은하게, 5분 뒤 다시 깨움) + 수면 오버레이 복귀
         findViewById<TextView>(R.id.gc_action_snooze).setOnClickListener {
-            GlobalVariables.snoozeUntilMs = System.currentTimeMillis() + 5 * 60 * 1000L
-            GlobalVariables.wakeAlarmTriggered = false   // Service가 5분 후 재발동할 수 있도록
+            CarDataService.send(this, CarDataService.ACTION_WAKE_SNOOZE)
             GlobalVariables.showSleepOverlayImmediately = true
-            GNCLog.i("[WakeActivity] 5분 더 → snoozeUntilMs=${GlobalVariables.snoozeUntilMs}, wakeAlarmTriggered=false, CampingActivity 수면 오버레이 즉시 표시")
+            GNCLog.i("[WakeActivity] 5분 더 → 기상 시퀀스 스누즈, CampingActivity 수면 오버레이 즉시 표시")
             startActivity(Intent(this, CampingActivity::class.java))
             finish()
         }
 
         findViewById<TextView>(R.id.gc_action_wake_up).setOnClickListener {
-            GNCLog.i("[WakeActivity] 일어날게요 탭 → Phase B 전환")
+            GNCLog.i("[WakeActivity] 일어날게요 탭 → 기상 시퀀스 정리 + Phase B 전환")
+            CarDataService.send(this, CarDataService.ACTION_WAKE_FINISH)
             showPhaseB()
         }
     }
@@ -211,6 +221,55 @@ class WakeActivity : BaseActivity() {
         GNCLog.d("[WakeActivity] 도착 예상 — ${arrivalTimeStr}, 잔량 ${arrivalBatPct}%")
         findViewById<TextView>(R.id.gc_wake_arrival_time).text = arrivalTimeStr
         findViewById<TextView>(R.id.gc_wake_dest_name).text = "도착 예상 잔량 ${arrivalBatPct}%"
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 기상 시퀀스 — 차가 깨우면서 한 일
+    // ────────────────────────────────────────────────────────────────
+
+    private fun renderWakeSequence() {
+        val status = CarDataService.wakeStatus
+        val card = findViewById<View>(R.id.gc_card_wake_sequence)
+        if (status.items.isEmpty()) {
+            card.visibility = View.GONE
+            return
+        }
+        card.visibility = View.VISIBLE
+        val entries = status.items
+            .filter { it.action != WakeAction.ALARM }
+            .map { "${stateMark(it.state)} ${getString(actionLabel(it.action))}${stateSuffix(it.state)}" }
+        val text = StringBuilder(entries.chunked(2).joinToString("\n") { it.joinToString("      ") })
+        if (status.eco) text.append("\n").append(getString(R.string.gc_wake_seq_eco))
+        findViewById<TextView>(R.id.gc_wake_sequence_list).text = text
+    }
+
+    private fun stateMark(state: WakeSequenceStatus.State) = when (state) {
+        WakeSequenceStatus.State.DONE -> "✓"
+        WakeSequenceStatus.State.PENDING, WakeSequenceStatus.State.RUNNING -> "…"
+        WakeSequenceStatus.State.UNSUPPORTED -> "—"
+        WakeSequenceStatus.State.DENIED, WakeSequenceStatus.State.FAILED -> "✕"
+    }
+
+    private fun stateSuffix(state: WakeSequenceStatus.State) = when (state) {
+        WakeSequenceStatus.State.UNSUPPORTED -> " " + getString(R.string.gc_wake_seq_unsupported)
+        WakeSequenceStatus.State.DENIED -> " " + getString(R.string.gc_wake_seq_denied)
+        WakeSequenceStatus.State.FAILED -> " " + getString(R.string.gc_wake_seq_failed)
+        else -> ""
+    }
+
+    private fun actionLabel(action: WakeAction): Int = when (action) {
+        WakeAction.DEFROST_ON -> R.string.gc_wake_act_defrost
+        WakeAction.MIRROR_HEAT_ON -> R.string.gc_wake_act_mirror_heat
+        WakeAction.STEERING_HEAT_ON -> R.string.gc_wake_act_steering_heat
+        WakeAction.SEAT_HEAT_ON -> R.string.gc_wake_act_seat_heat
+        WakeAction.SEAT_VENT_ON -> R.string.gc_wake_act_seat_vent
+        WakeAction.LIGHT_RAMP -> R.string.gc_wake_act_light
+        WakeAction.FRESH_AIR -> R.string.gc_wake_act_fresh_air
+        WakeAction.WINDOW_CRACK -> R.string.gc_wake_act_window_open
+        WakeAction.WINDOW_CLOSE -> R.string.gc_wake_act_window_close
+        WakeAction.DEFROST_OFF -> R.string.gc_wake_act_defrost_off
+        WakeAction.MIRROR_UNFOLD -> R.string.gc_wake_act_mirror_unfold
+        WakeAction.ALARM -> R.string.gc_wake_act_alarm
     }
 
     // ────────────────────────────────────────────────────────────────
