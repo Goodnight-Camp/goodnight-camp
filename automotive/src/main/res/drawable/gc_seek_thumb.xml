@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 남길 배터리 슬라이더 손잡이: 차량 터치용 큰 원 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <size android:width="@dimen/gc_seek_thumb" android:height="@dimen/gc_seek_thumb" />
+    <solid android:color="@color/text_primary" />
+    <stroke android:width="@dimen/gc_seek_thumb_stroke" android:color="@color/button_filled_enabled" />
+</shape>

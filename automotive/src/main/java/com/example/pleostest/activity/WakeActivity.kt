@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.example.pleostest.R
 import com.example.pleostest.db.SleepDatabase
@@ -38,6 +39,8 @@ class WakeActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 아침 화면은 밝은 아침 팔레트(values/colors.xml) — 앱 나머지는 밤 팔레트
+        delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_NO
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_wake)
 
@@ -46,6 +49,37 @@ class WakeActivity : BaseActivity() {
         setupPhaseA()
         setupPhaseB()
         // 정각 알림·음성 안내는 CarDataService(기상 시퀀스)가 이 화면을 띄우면서 함께 처리
+
+        // 캠핑 화면의 [차박 종료]로 들어오면 알람 단계 없이 바로 종료 화면(출발 준비)
+        // (아침 테마 적용으로 액티비티가 한 번 다시 만들어질 수 있어 savedInstanceState 여부와 무관하게 판단)
+        if (intent.getBooleanExtra(EXTRA_END_CAMPING, false)) {
+            GNCLog.i("[WakeActivity] 차박 종료로 진입 → 종료 화면")
+            findViewById<View>(R.id.gc_header_b).findViewById<TextView>(R.id.gc_header_subtitle).text =
+                getString(R.string.gc_wake_end_subtitle)
+            showPhaseB()
+        }
+
+        // 종료 화면에서 뒤로 → 캠핑을 마치고 첫 화면(오늘 밤 설정)으로
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (findViewById<View>(R.id.gc_phase_b).visibility == View.VISIBLE) goToStart() else finish()
+            }
+        })
+    }
+
+    private fun goToStart() {
+        GNCLog.i("[WakeActivity] 종료 화면 닫기 → 첫 화면")
+        GlobalVariables.isCampingMode = false
+        GlobalVariables.campingStartMin = -1
+        startActivity(Intent(this, SetUpActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
+    }
+
+    companion object {
+        /** 캠핑 화면의 [차박 종료]에서 열림 → 바로 종료 화면 */
+        const val EXTRA_END_CAMPING = "end_camping"
     }
 
     override fun onResume() {
@@ -79,6 +113,13 @@ class WakeActivity : BaseActivity() {
     private fun setupPhaseA() {
         GNCLog.d("[WakeActivity] Phase A 셋업")
 
+        // 일출 카드의 큰 시각·날짜
+        val cal = Calendar.getInstance()
+        findViewById<TextView>(R.id.gc_wake_a_time).text =
+            String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+        findViewById<TextView>(R.id.gc_wake_a_date).text = android.text.format.DateFormat.format(
+            android.text.format.DateFormat.getBestDateTimePattern(java.util.Locale.getDefault(), "yyyyMMMMdEEEE"), cal)
+
         // 5분만 더 → 기상 시퀀스 스누즈(조명 다시 은은하게, 5분 뒤 다시 깨움) + 수면 오버레이 복귀
         findViewById<TextView>(R.id.gc_action_snooze).setOnClickListener {
             CarDataService.send(this, CarDataService.ACTION_WAKE_SNOOZE)
@@ -103,6 +144,11 @@ class WakeActivity : BaseActivity() {
         val headerB = findViewById<View>(R.id.gc_header_b)
         headerB.findViewById<TextView>(R.id.gc_header_subtitle).text =
             getString(R.string.gc_wake_phase_b_subtitle)
+        // 헤더 뒤로 버튼 = 종료 화면 닫고 첫 화면으로
+        headerB.findViewById<View>(R.id.gc_header_back).apply {
+            visibility = View.VISIBLE
+            setOnClickListener { goToStart() }
+        }
 
         // 집으로 안내 → 순정 내비 HOME 즐겨찾기로 경로 안내 시작
         val navigateHome = findViewById<View>(R.id.gc_action_navigate_home)
@@ -202,6 +248,16 @@ class WakeActivity : BaseActivity() {
         findViewById<TextView>(R.id.gc_wake_current_time).text = timeStr
         findViewById<TextView>(R.id.gc_wake_current_date).text = dateStr
 
+        // 어젯밤 기록 — 잠든 시각(이대로 잘게요) → 지금, 잔 시간, 설정 온도
+        val nowMin = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+        val startMin = GlobalVariables.campingStartMin
+        findViewById<TextView>(R.id.gc_wake_sleep_range).text =
+            if (startMin >= 0) "${GlobalFunction.minutesToHHmm(startMin)} → $timeStr" else timeStr
+        val sleptMin = if (startMin >= 0) (nowMin - startMin + 24 * 60) % (24 * 60) else -1
+        findViewById<TextView>(R.id.gc_wake_sleep_duration).text =
+            if (sleptMin >= 0) getString(R.string.gc_duration_hm, sleptMin / 60, sleptMin % 60) else "-"
+        findViewById<TextView>(R.id.gc_wake_set_temp).text = tempLabel
+
         // 집으로 안내 거리
         findViewById<TextView>(R.id.gc_wake_route).text =
             "${GlobalVariables.destinationDistanceKm} km"
@@ -231,14 +287,15 @@ class WakeActivity : BaseActivity() {
         val status = CarDataService.wakeStatus
         val card = findViewById<View>(R.id.gc_card_wake_sequence)
         if (status.items.isEmpty()) {
-            card.visibility = View.GONE
+            card.visibility = View.INVISIBLE   // 자리는 유지 (버튼이 위로 딸려 올라가지 않게)
             return
         }
         card.visibility = View.VISIBLE
         val entries = status.items
             .filter { it.action != WakeAction.ALARM }
             .map { "${stateMark(it.state)} ${getString(actionLabel(it.action))}${stateSuffix(it.state)}" }
-        val text = StringBuilder(entries.chunked(2).joinToString("\n") { it.joinToString("      ") })
+        // 한 줄에 하나 — 카드 높이를 채우고 차량 거리에서도 읽히게
+        val text = StringBuilder(entries.joinToString("\n"))
         if (status.eco) text.append("\n").append(getString(R.string.gc_wake_seq_eco))
         findViewById<TextView>(R.id.gc_wake_sequence_list).text = text
     }

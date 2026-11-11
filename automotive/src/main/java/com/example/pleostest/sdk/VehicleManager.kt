@@ -8,6 +8,8 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import ai.pleos.playground.vehicle.Vehicle
+import ai.pleos.playground.vehicle.api.model.area.SeatArea
+import ai.pleos.playground.vehicle.constant.unit.TemperatureUnit
 import com.example.pleostest.util.GNCLog
 
 class VehicleManager(private val context: Context) {
@@ -19,6 +21,9 @@ class VehicleManager(private val context: Context) {
 
     var onBattery: ((Int) -> Unit)? = null
     var onTemperature: ((Float) -> Unit)? = null
+    var onCabinTemperature: ((Float) -> Unit)? = null   // 실내 온도 (HVAC_TEMPERATURE_CURRENT)
+    var onSetTemperature: ((Float) -> Unit)? = null     // 차 공조 설정 온도 (HVAC_TEMPERATURE_SET)
+    private var cabinArea: SeatArea? = null
     var onEfficiency: ((Float) -> Unit)? = null   // km/kWh
     var onCapacity: ((Float) -> Unit)? = null     // Wh
     var onError: ((Exception) -> Unit)? = null
@@ -47,7 +52,39 @@ class VehicleManager(private val context: Context) {
     fun fetch() {
         fetchBattery()
         fetchTemperature()
+        fetchCabinTemperature()
         fetchEfficiencyAndCapacity()
+    }
+
+    /** 실내 온도 — Pleos HVAC getHvacTemperatureCurrent. 지원 영역을 한 번 조회한 뒤 첫 영역(운전석 쪽) 값을 쓴다 */
+    @SuppressLint("MissingPermission")
+    private fun fetchCabinTemperature() {
+        val hvac = vehicle.getHVAC()
+        val area = cabinArea
+        try {
+            if (area == null) {
+                hvac.checkHvacTemperatureCurrentCapabilities({ _, areas ->
+                    cabinArea = areas.firstOrNull()
+                    GNCLog.i("[VehicleManager] 실내 온도 지원 영역 ${areas.size}개")
+                    cabinArea?.let { readCabin(it) }
+                }, { e -> GNCLog.d("[VehicleManager] 실내 온도 미지원: ${e.message}") })
+            } else {
+                readCabin(area)
+            }
+        } catch (e: SecurityException) {
+            GNCLog.w("[VehicleManager] 실내 온도 권한 없음: ${e.message}")
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun readCabin(area: SeatArea) {
+        vehicle.getHVAC().getHvacTemperatureCurrent(area, TemperatureUnit.CELSIUS,
+            { c -> c?.let { GNCLog.i("[VehicleManager] 실내 온도 ${it}°C"); onCabinTemperature?.invoke(it) } },
+            { e -> GNCLog.d("[VehicleManager] 실내 온도 조회 실패: ${e.message}") })
+        // 앱은 밤새 공조를 직접 정하지 않으므로, 계산에 쓰는 온도는 차에 설정된 값을 그대로 따른다
+        vehicle.getHVAC().getHvacTemperature(area, TemperatureUnit.CELSIUS,
+            { c -> c?.let { onSetTemperature?.invoke(it) } },
+            { e -> GNCLog.d("[VehicleManager] 설정 온도 조회 실패: ${e.message}") })
     }
 
     @SuppressLint("MissingPermission")
@@ -122,6 +159,8 @@ class VehicleManager(private val context: Context) {
     fun release() {
         onBattery = null
         onTemperature = null
+        onCabinTemperature = null
+        onSetTemperature = null
         onEfficiency = null
         onCapacity = null
         onError = null

@@ -10,7 +10,9 @@ import com.example.pleostest.db.SleepDatabase
 import com.example.pleostest.db.SleepRecord
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.sdk.HomeTrip
+import com.example.pleostest.sdk.HourlyTemp
 import com.example.pleostest.sdk.HvacCalibration
+import com.example.pleostest.sdk.WeatherForecast
 import com.example.pleostest.sdk.OvernightHvac
 import com.example.pleostest.sdk.NaviManager
 import com.example.pleostest.sdk.TripEstimate
@@ -32,6 +34,9 @@ class PlanActivity : BaseActivity() {
     /** 마지막으로 화면에 그린 예산 — [이대로 잘게요] 시 예측값을 기록에 남김 */
     private var lastBudget: GlobalFunction.BatteryBudgetResult? = null
 
+    /** 캠핑 위치의 시간별 기온 예보 (null = 아직 없음 / 받지 못함 → 지금 기온 기준) */
+    private var forecast: List<HourlyTemp>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan)
@@ -41,6 +46,33 @@ class PlanActivity : BaseActivity() {
         setupListeners()
         requestNaviEstimate()    // 내비 예측이 오면 다시 그림
         loadHvacCalibration()    // 지난 밤 실측 보정이 로드되면 다시 그림
+        requestForecast()        // 시간별 예보가 오면 곡선으로 다시 그림
+    }
+
+    @android.annotation.SuppressLint("MissingPermission")
+    private fun lastKnownLocation(): android.location.Location? {
+        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+            android.content.pm.PackageManager.PERMISSION_GRANTED) return null
+        val lm = getSystemService(android.location.LocationManager::class.java) ?: return null
+        return lm.getProviders(true).mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
+            .maxByOrNull { it.time }
+    }
+
+    /** 밤사이 기온 변화 — 캠핑 위치 시간별 예보 (통신 안 되면 지금 기온 기준 유지) */
+    private fun requestForecast() {
+        var lat = GlobalVariables.currentLat
+        var lng = GlobalVariables.currentLng
+        if (lat == 0.0 && lng == 0.0) {
+            // Pleos 위치 콜백이 아직 없으면 안드로이드 위치 서비스의 마지막 위치로 대체
+            lastKnownLocation()?.let { lat = it.latitude; lng = it.longitude }
+        }
+        WeatherForecast.fetch(lat, lng) { result ->
+            runOnUiThread {
+                if (isFinishing || isDestroyed || result == null) return@runOnUiThread
+                forecast = result
+                populateViews()
+            }
+        }
     }
 
     // ────────────────────────────────────────────────────────────────
@@ -113,8 +145,11 @@ class PlanActivity : BaseActivity() {
         findViewById<TextView>(R.id.gc_plan_headline).text =
             getString(R.string.gc_plan_headline, tempLabel)
 
-        val budget = GlobalFunction.calculateBatteryBudget(naviNeededPct, hvacCalibration)
+        val budget = GlobalFunction.calculateBatteryBudget(naviNeededPct, hvacCalibration, forecast)
         lastBudget = budget
+        findViewById<TextView>(R.id.gc_plan_forecast_note).text =
+            if (budget.forecastUsed) getString(R.string.gc_plan_forecast_used, Math.round(budget.minTempC))
+            else getString(R.string.gc_plan_forecast_none)
         GNCLog.i("[PlanActivity] 배터리 예산 계산 결과 — current=${budget.currentPct}%, morning=${budget.morningPct}%, overnightUse=${budget.overnightUsePct}%, neededHome=${budget.neededForHomePct}%, reserve=${budget.reservePct}%, viable=${budget.isViable}")
 
         // GlobalVariables 갱신 (다른 화면에서도 참조)

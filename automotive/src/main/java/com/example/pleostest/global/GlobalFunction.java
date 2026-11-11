@@ -4,11 +4,15 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.pleostest.R;
+import com.example.pleostest.sdk.HourlyTemp;
 import com.example.pleostest.sdk.HvacCalibration;
 import com.example.pleostest.sdk.OvernightHvac;
+import com.example.pleostest.sdk.OvernightProfile;
+import com.example.pleostest.sdk.OvernightProfiles;
 import com.example.pleostest.util.GNCLog;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -33,11 +37,23 @@ public class GlobalFunction {
         public final double baseHvacKw;
         /** 공조 소비 보정에 쓴 지난 밤 수 (0 = 보정 없음) */
         public final int calibrationNights;
+        /** 밤사이 배터리 곡선 — x: 잠드는 시각 0 → 기상 1, y: 예상 % */
+        public final double[] curveX;
+        public final double[] curveY;
+        /** true = 시간별 기온 예보 반영, false = 지금 기온이 밤새 그대로라고 가정 */
+        public final boolean forecastUsed;
+        /** 계산에 쓴 밤사이 최저 기온 */
+        public final float minTempC;
 
         public BatteryBudgetResult(int currentPct, int morningPct, int overnightUsePct,
                                    int neededForHomePct, int reservePct, boolean isViable,
                                    int startTimeMin, int wakeTimeMin, boolean neededFromNavi,
-                                   double baseHvacKw, int calibrationNights) {
+                                   double baseHvacKw, int calibrationNights,
+                                   double[] curveX, double[] curveY, boolean forecastUsed, float minTempC) {
+            this.curveX = curveX;
+            this.curveY = curveY;
+            this.forecastUsed = forecastUsed;
+            this.minTempC = minTempC;
             this.neededFromNavi = neededFromNavi;
             this.baseHvacKw = baseHvacKw;
             this.calibrationNights = calibrationNights;
@@ -151,6 +167,14 @@ public class GlobalFunction {
      * @param calibration          지난 밤 실측으로 구한 공조 소비 보정 계수
      */
     public static BatteryBudgetResult calculateBatteryBudget(int naviNeededForHomePct, HvacCalibration calibration) {
+        return calculateBatteryBudget(naviNeededForHomePct, calibration, null);
+    }
+
+    /**
+     * @param forecast 캠핑 위치의 시간별 기온 예보 (null = 없음 → 지금 기온이 밤새 그대로라고 가정)
+     */
+    public static BatteryBudgetResult calculateBatteryBudget(int naviNeededForHomePct, HvacCalibration calibration,
+                                                             List<HourlyTemp> forecast) {
         int currentPct = batteryPct();
         double capacityKwh = Math.max(GlobalVariables.batteryCapacityWh / 1000.0, 1.0);
         double overnightHrs = overnightHours();
@@ -158,14 +182,21 @@ public class GlobalFunction {
 
         GNCLog.i("[GlobalFunction] 배터리 예산 계산 시작 — battery=" + currentPct + "%, capacity=" + capacityKwh + "kWh, outside=" + outsideCelsius + "°C, setTemp=" + GlobalVariables.setTemperatureDeg + "°C, guests=" + GlobalVariables.guestCount + ", dest=" + GlobalVariables.destinationDistanceKm + "km, efficiency=" + GlobalVariables.efficiencyKmPerKwh + "km/kWh, overnightHrs=" + overnightHrs);
 
-        // 공조 소비 kW — 기본 모델 × 실측 보정
-        double baseKw = OvernightHvac.baseKw(outsideCelsius, GlobalVariables.setTemperatureDeg, GlobalVariables.guestCount);
-        double hvacKw = baseKw * calibration.getFactor();
-        GNCLog.d("[GlobalFunction] HVAC 소비 — baseKw=" + String.format(Locale.US, "%.3f", baseKw) + "kW × 보정 " + String.format(Locale.US, "%.2f", calibration.getFactor()) + "(" + calibration.getNights() + "밤) = " + String.format(Locale.US, "%.3f", hvacKw) + "kW");
+        // 공조 소비 — 15분마다 그 시각 기온(예보, 없으면 지금 기온)으로 기본 모델 × 실측 보정을 누적
+        long nowMs = System.currentTimeMillis();
+        long endMs = nowMs + (long) (overnightHrs * 3_600_000L);
+        OvernightProfile profile = OvernightProfiles.INSTANCE.build(nowMs, endMs, currentPct, capacityKwh,
+                GlobalVariables.setTemperatureDeg, GlobalVariables.guestCount, calibration.getFactor(),
+                outsideCelsius, forecast);
+        double baseKw = profile.getAvgBaseKw();
+        GNCLog.d("[GlobalFunction] HVAC 소비 — " + (profile.getForecastUsed() ? "시간별 예보 반영" : "지금 기온 고정")
+                + ", 평균 baseKw=" + String.format(Locale.US, "%.3f", baseKw) + "kW × 보정 "
+                + String.format(Locale.US, "%.2f", calibration.getFactor()) + "(" + calibration.getNights() + "밤)"
+                + ", 최저 " + String.format(Locale.US, "%.1f", profile.getMinTempC()) + "°C");
 
         // 밤새 소비 %
-        double overnightKwh = hvacKw * overnightHrs;
-        int overnightPct = (int) Math.min(Math.max((overnightKwh / capacityKwh) * 100, 0), 100);
+        double overnightKwh = profile.getUsedKwh();
+        int overnightPct = (int) Math.min(Math.max(Math.round((overnightKwh / capacityKwh) * 100), 0), 100);
         int morningPct = Math.max(currentPct - overnightPct, 0);
         GNCLog.d("[GlobalFunction] 밤새 소비 — overnightKwh=" + String.format(Locale.US, "%.2f", overnightKwh) + "kWh, overnightPct=" + overnightPct + "%, morningPct=" + morningPct + "%");
 
@@ -201,7 +232,11 @@ public class GlobalFunction {
                 wakeMin,
                 fromNavi,
                 baseKw,
-                calibration.getNights()
+                calibration.getNights(),
+                profile.getXs(),
+                profile.getPcts(),
+                profile.getForecastUsed(),
+                profile.getMinTempC()
         );
     }
 

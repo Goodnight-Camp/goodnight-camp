@@ -103,12 +103,27 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/gc_plan_budget"
-                    android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_plan_budget"
+                        android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                    <!-- 시간별 예보 반영 여부 (PlanActivity) -->
+                    <TextView
+                        android:id="@+id/gc_plan_forecast_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/gc_space_4"
+                        android:textAppearance="@style/TextAppearance.GC.Caption"
+                        tools:text="시간별 예보 반영 · 새벽 최저 -2°C" />
+                </LinearLayout>
 
                 <View
                     android:layout_width="@dimen/gc_space_24"

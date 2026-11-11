@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 캠핑 화면 "아침까지 차가 할 일" 한 줄: 시각 · 아이콘 · 무엇을 · 상태 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="@dimen/gc_space_12"
+    android:paddingBottom="@dimen/gc_space_12">
+
+    <TextView
+        android:id="@+id/gc_tl_time"
+        android:layout_width="@dimen/gc_timeline_time_width"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.GC.RowValue"
+        tools:text="06:15" />
+
+    <ImageView
+        android:id="@+id/gc_tl_icon"
+        style="@style/Widget.GC.IconBox.Small"
+        android:importantForAccessibility="no"
+        tools:src="@drawable/gc_ic_thermometer" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/gc_space_24"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/gc_tl_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.GC.RowValueSm"
+            tools:text="성에 제거" />
+
+        <TextView
+            android:id="@+id/gc_tl_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/gc_space_4"
+            android:textAppearance="@style/TextAppearance.GC.Label"
+            tools:text="앞·뒤 유리 · 공조 켜기" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/gc_tl_state"
+        android:layout_width="@dimen/gc_icon_md"
+        android:layout_height="@dimen/gc_icon_md"
+        android:importantForAccessibility="no"
+        android:src="@drawable/gc_ic_check"
+        app:tint="@color/text_quaternary" />
+</LinearLayout>

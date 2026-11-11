@@ -19,6 +19,7 @@ import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.global.GlobalVariables.SLEEP_DELAY_MS
 import com.example.pleostest.sdk.WakeAction
+import com.example.pleostest.sdk.WakeSequence
 import com.example.pleostest.sdk.WakeSequenceStatus
 import com.example.pleostest.service.CarDataService
 import com.example.pleostest.util.GNCLog
@@ -129,6 +130,12 @@ class CampingActivity : BaseActivity() {
         findViewById<TextView>(R.id.gc_camping_hvac_value).text =
             getString(R.string.gc_camping_hvac_active,
                 GlobalVariables.setTemperatureDeg.toString())
+        findViewById<TextView>(R.id.gc_camping_morning_value).text =
+            getString(R.string.gc_camping_morning_value, GlobalVariables.morningBatteryPct,
+                GlobalVariables.neededForHomePct + GlobalVariables.marginBatteryPct)
+        findViewById<TextView>(R.id.gc_camping_dest_value).text =
+            "${GlobalVariables.destinationName} ${GlobalVariables.destinationDistanceKm} km"
+        populateTimeline()
 
         // 수면 오버레이가 떠 있으면 그쪽도 갱신
         val overlay = findViewById<View>(R.id.gc_sleep_overlay)
@@ -163,9 +170,17 @@ class CampingActivity : BaseActivity() {
             }
         }
         findViewById<TextView>(R.id.gc_action_stop_camping).setOnClickListener {
-            GNCLog.i("[CampingActivity] 차박 종료 버튼 탭 → 앱 종료")
+            // 차박 종료 = 일어난 것과 같음 → 종료 화면(밤새 기록 · 집으로 안내)으로.
+            // 기상 시퀀스가 돌던 중이면 정리(바꾼 차 상태 복원), 수면 기록도 마무리된다 (WakeActivity)
+            GNCLog.i("[CampingActivity] 차박 종료 버튼 탭 → 종료 화면(출발 준비)")
             GlobalVariables.isCampingMode = false
-            finishAffinity()
+            GlobalVariables.snoozeUntilMs = 0L
+            GlobalVariables.wakeAtMs = 0L
+            CarDataService.send(this, CarDataService.ACTION_CAMPING_END)
+            startActivity(Intent(this, WakeActivity::class.java).apply {
+                putExtra(WakeActivity.EXTRA_END_CAMPING, true)
+            })
+            finish()
         }
     }
 
@@ -200,6 +215,9 @@ class CampingActivity : BaseActivity() {
             else getString(R.string.gc_sleep_status,
                 "${GlobalVariables.setTemperatureDeg}°C",
                 GlobalFunction.batteryPct())
+        // 기상 시퀀스가 시작되면 모닥불이 커지며 "곧 깨운다"는 신호
+        overlay.findViewById<com.example.pleostest.ui.CampfireView>(R.id.gc_sleep_campfire).intensity =
+            if (sequence.active) 1f else 0.5f
 
         val cal = Calendar.getInstance()
         val nowMin = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
@@ -226,6 +244,57 @@ class CampingActivity : BaseActivity() {
         else total
         val progress = if (duration > 0) (elapsed * 1000 / duration).coerceIn(0, 1000) else 0
         overlay.findViewById<ProgressBar>(R.id.gc_sleep_progress).progress = progress
+    }
+
+    /** "아침까지 차가 할 일" — 기상 시퀀스 시간표를 시각별로 묶어 보여주고, 진행되면 체크를 켬 */
+    private fun populateTimeline() {
+        val container = findViewById<android.widget.LinearLayout>(R.id.gc_camping_timeline)
+        val plan = WakeSequence.plan(CarDataService.conditionsNow())
+        val status = CarDataService.wakeStatus
+        val wakeAt = status.wakeAtMs.takeIf { status.active && it > 0 }
+            ?: GlobalVariables.wakeAtMs.takeIf { it > 0 }
+            ?: WakeSequence.nextWakeAt(System.currentTimeMillis(), GlobalVariables.wakeTime)
+        val actions = plan.map { it.action }.toSet()
+        data class Row(val atSec: Int, val icon: Int, val title: Int, val sub: Int, val group: Set<WakeAction>)
+        val rows = buildList {
+            add(Row(-WakeSequence.DEFROST_LEAD_SEC, R.drawable.gc_ic_window, R.string.gc_tl_defrost,
+                if (WakeAction.MIRROR_HEAT_ON in actions) R.string.gc_tl_defrost_sub_mirror else R.string.gc_tl_defrost_sub,
+                setOf(WakeAction.DEFROST_ON, WakeAction.MIRROR_HEAT_ON)))
+            if (WakeAction.SEAT_HEAT_ON in actions) add(Row(-WakeSequence.COMFORT_LEAD_SEC, R.drawable.gc_ic_flame,
+                R.string.gc_tl_heat, R.string.gc_tl_heat_sub, setOf(WakeAction.SEAT_HEAT_ON, WakeAction.STEERING_HEAT_ON)))
+            if (WakeAction.SEAT_VENT_ON in actions) add(Row(-WakeSequence.COMFORT_LEAD_SEC, R.drawable.gc_ic_seat,
+                R.string.gc_tl_vent_seat, R.string.gc_tl_vent_seat_sub, setOf(WakeAction.SEAT_VENT_ON)))
+            add(Row(-WakeSequence.LIGHT_LEAD_SEC, R.drawable.gc_ic_bulb, R.string.gc_tl_light,
+                if (WakeAction.WINDOW_CRACK in actions) R.string.gc_tl_light_sub_window else R.string.gc_tl_light_sub,
+                setOf(WakeAction.LIGHT_RAMP, WakeAction.FRESH_AIR, WakeAction.WINDOW_CRACK)))
+            add(Row(0, R.drawable.gc_ic_sunrise, R.string.gc_tl_alarm, R.string.gc_tl_alarm_sub, setOf(WakeAction.ALARM)))
+        }
+        container.removeAllViews()
+        val inflater = layoutInflater
+        val cal = Calendar.getInstance()
+        rows.forEachIndexed { i, row ->
+            if (i > 0) container.addView(View(this).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT, resources.getDimensionPixelSize(R.dimen.gc_divider))
+                setBackgroundColor(getColor(R.color.divider_primary))
+            })
+            val v = inflater.inflate(R.layout.gc_item_timeline, container, false)
+            cal.timeInMillis = wakeAt + row.atSec * 1000L
+            v.findViewById<TextView>(R.id.gc_tl_time).text =
+                String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+            v.findViewById<android.widget.ImageView>(R.id.gc_tl_icon).setImageResource(row.icon)
+            v.findViewById<TextView>(R.id.gc_tl_title).setText(row.title)
+            v.findViewById<TextView>(R.id.gc_tl_sub).setText(row.sub)
+            val states = status.items.filter { it.action in row.group }.map { it.state }
+            val tint = when {
+                WakeSequenceStatus.State.DONE in states -> R.color.informative_active
+                WakeSequenceStatus.State.RUNNING in states -> R.color.informative_night
+                else -> R.color.text_quaternary
+            }
+            v.findViewById<android.widget.ImageView>(R.id.gc_tl_state).imageTintList =
+                android.content.res.ColorStateList.valueOf(getColor(tint))
+            container.addView(v)
+        }
     }
 
     /** 지금 진행 중이거나 가장 최근에 끝난 기상 단계 이름 */

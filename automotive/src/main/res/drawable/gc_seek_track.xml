@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 남길 배터리 슬라이더 트랙: 굵고 둥근 바, 채워진 부분은 주 동작 색 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background" android:gravity="center_vertical|fill_horizontal">
+        <shape android:shape="rectangle">
+            <size android:height="@dimen/gc_seek_track" />
+            <corners android:radius="@dimen/gc_seek_track" />
+            <solid android:color="@color/surface_high" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress" android:gravity="center_vertical|fill_horizontal">
+        <scale android:scaleWidth="100%">
+            <shape android:shape="rectangle">
+                <size android:height="@dimen/gc_seek_track" />
+                <corners android:radius="@dimen/gc_seek_track" />
+                <solid android:color="@color/button_filled_enabled" />
+            </shape>
+        </scale>
+    </item>
+</layer-list>

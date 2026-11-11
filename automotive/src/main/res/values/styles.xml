@@ -15,7 +15,7 @@
 
     <style name="TextAppearance.GC.AppTitle">
         <item name="android:textSize">@dimen/gc_text_title</item>
-        <item name="android:textFontWeight">800</item>
+        <item name="android:textFontWeight">700</item>
     </style>
     <style name="TextAppearance.GC.Subtitle">
         <item name="android:textSize">@dimen/gc_text_body_sm</item>
@@ -24,11 +24,11 @@
     </style>
     <style name="TextAppearance.GC.Headline">
         <item name="android:textSize">@dimen/gc_text_headline</item>
-        <item name="android:textFontWeight">800</item>
+        <item name="android:textFontWeight">700</item>
     </style>
     <style name="TextAppearance.GC.HeadlineMd">
         <item name="android:textSize">@dimen/gc_text_title_lg</item>
-        <item name="android:textFontWeight">800</item>
+        <item name="android:textFontWeight">700</item>
     </style>
     <style name="TextAppearance.GC.CardTitle">
         <item name="android:textSize">@dimen/gc_text_title_sm</item>
@@ -41,7 +41,7 @@
     </style>
     <style name="TextAppearance.GC.StatValue">
         <item name="android:textSize">@dimen/gc_text_display</item>
-        <item name="android:textFontWeight">800</item>
+        <item name="android:textFontWeight">700</item>
     </style>
     <style name="TextAppearance.GC.StatUnit">
         <item name="android:textSize">@dimen/gc_text_body</item>
@@ -59,7 +59,7 @@
     </style>
     <style name="TextAppearance.GC.SettingValue">
         <item name="android:textSize">@dimen/gc_text_title_lg</item>
-        <item name="android:textFontWeight">800</item>
+        <item name="android:textFontWeight">700</item>
     </style>
     <style name="TextAppearance.GC.RowValue">
         <item name="android:textSize">@dimen/gc_text_title_sm</item>

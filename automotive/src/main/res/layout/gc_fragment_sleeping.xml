@@ -62,12 +62,20 @@
             android:textAppearance="@style/TextAppearance.GC.Sleep.Status"
             tools:text="19.8°C 유지 중 · 잔량 77% · 계획대로 가는 중" />
 
+        <!-- 은은한 모닥불 — 기상 시퀀스가 시작되면 불이 커짐 (CampingActivity) -->
+        <com.example.pleostest.ui.CampfireView
+            android:id="@+id/gc_sleep_campfire"
+            android:layout_width="@dimen/gc_campfire_width"
+            android:layout_height="@dimen/gc_campfire_height"
+            android:layout_marginTop="@dimen/gc_space_24"
+            android:importantForAccessibility="no" />
+
         <ProgressBar
             android:id="@+id/gc_sleep_progress"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="@dimen/gc_sleep_progress_width"
             android:layout_height="@dimen/gc_sleep_progress_height"
-            android:layout_marginTop="@dimen/gc_space_56"
+            android:layout_marginTop="@dimen/gc_space_24"
             android:max="1000"
             android:progressDrawable="@drawable/gc_sleep_progress"
             tools:progress="430" />

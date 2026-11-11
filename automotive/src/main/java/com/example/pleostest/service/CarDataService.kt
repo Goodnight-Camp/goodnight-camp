@@ -39,6 +39,8 @@ class CarDataService : Service() {
         const val ACTION_WAKE_SNOOZE = "com.example.pleostest.action.WAKE_SNOOZE"
         const val ACTION_WAKE_FINISH = "com.example.pleostest.action.WAKE_FINISH"
         const val ACTION_WAKE_DEMO = "com.example.pleostest.action.WAKE_DEMO"
+        /** 차박 종료 — 진행 중인 기상 시퀀스를 중단하고 바꾼 차 상태를 되돌림 */
+        const val ACTION_CAMPING_END = "com.example.pleostest.action.CAMPING_END"
         const val EXTRA_DEMO_SPEED = "speed"
         /** 시연용 바깥 온도 (에뮬레이터는 외기온을 바꿀 수 없어 겨울 시나리오를 보여줄 때 사용) */
         const val EXTRA_DEMO_OUTSIDE_C = "outside_c"
@@ -52,6 +54,16 @@ class CarDataService : Service() {
         /** 화면에서 읽는 최신 시퀀스 상태 */
         @Volatile var wakeStatus: WakeSequenceStatus = WakeSequenceStatus()
             private set
+
+        /** 지금 차 상태로 본 기상 시퀀스 조건 — 캠핑 화면 타임라인도 같은 기준을 씀 */
+        fun conditionsNow(): WakeConditions {
+            val battery = GlobalFunction.batteryPctOrNull()
+            return WakeConditions(
+                outsideC = GlobalFunction.temperatureValueStr().toFloatOrNull(),
+                batterySparePct = battery?.let { it - GlobalVariables.neededForHomePct - GlobalVariables.marginBatteryPct },
+                targetTempC = GlobalVariables.setTemperatureDeg.toFloat(),
+            )
+        }
 
         fun send(context: Context, action: String, configure: Intent.() -> Unit = {}) {
             context.startService(Intent(context, CarDataService::class.java).setAction(action).apply(configure))
@@ -93,6 +105,17 @@ class CarDataService : Service() {
             GlobalVariables.outTemperature = "${Math.round(celsius)}°C"
             broadcast()
         }
+        vehicleManager.onCabinTemperature = { celsius ->
+            GlobalVariables.cabinTemperature = "${Math.round(celsius)}°C"
+            broadcast()
+        }
+        vehicleManager.onSetTemperature = { celsius ->
+            val deg = Math.round(celsius)
+            if (deg != GlobalVariables.setTemperatureDeg) {
+                GNCLog.i("[CarDataService] 차 공조 설정 온도 ${deg}°C → 밤 계획·기상 시퀀스에 사용")
+                GlobalVariables.setTemperatureDeg = deg
+            }
+        }
         vehicleManager.onEfficiency = { kmPerKwh ->
             GNCLog.d("[CarDataService] 효율 갱신: $kmPerKwh km/kWh")
             GlobalVariables.efficiencyKmPerKwh = kmPerKwh
@@ -124,6 +147,12 @@ class CarDataService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_WAKE_SNOOZE -> snooze()
+            ACTION_CAMPING_END -> {
+                GNCLog.i("[CarDataService] 차박 종료 → 기상 시퀀스 중단")
+                wakeRunner.cancel()
+                getSystemService(NotificationManager::class.java).cancel(ALARM_NOTIFICATION_ID)
+                stopSpeaking()
+            }
             ACTION_WAKE_FINISH -> {
                 GNCLog.i("[CarDataService] 일어났음 → 기상 시퀀스 정리")
                 wakeRunner.finish()
@@ -181,14 +210,7 @@ class CarDataService : Service() {
         wakeRunner.arm(wakeAt, currentConditions())
     }
 
-    private fun currentConditions(): WakeConditions {
-        val battery = GlobalFunction.batteryPctOrNull()
-        return WakeConditions(
-            outsideC = GlobalFunction.temperatureValueStr().toFloatOrNull(),
-            batterySparePct = battery?.let { it - GlobalVariables.neededForHomePct - GlobalVariables.marginBatteryPct },
-            targetTempC = GlobalVariables.setTemperatureDeg.toFloat(),
-        )
-    }
+    private fun currentConditions(): WakeConditions = conditionsNow()
 
     private fun snooze() {
         val speed = if (wakeStatus.active) wakeRunner.speed() else 1.0
