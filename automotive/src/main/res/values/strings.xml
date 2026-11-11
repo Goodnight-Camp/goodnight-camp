@@ -54,6 +54,7 @@
     <string name="gc_stat_now">지금</string>
     <string name="gc_stat_morning">아침 잔량</string>
     <string name="gc_stat_overnight_use">밤새 사용</string>
+    <string name="gc_stat_overnight_use_calibrated">밤새 사용 · 내 기록 %1$d밤 보정</string>
     <string name="gc_stat_needed_home">집까지 필요</string>
     <string name="gc_stat_needed_home_navi">집까지 필요 · 내비</string>
     <string name="gc_plan_budget">배터리 예산</string>

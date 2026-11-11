@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.pleostest.R
+import com.example.pleostest.db.SleepDatabase
 import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.sdk.HomeRouteResult
@@ -134,13 +135,43 @@ class WakeActivity : BaseActivity() {
     private fun showPhaseB() {
         findViewById<View>(R.id.gc_phase_a).visibility = View.GONE
         findViewById<View>(R.id.gc_phase_b).visibility = View.VISIBLE
+        recordWakeUp()
         populatePhaseB()
+    }
+
+    /**
+     * 기상 시 실제 배터리를 수면 기록에 남긴다 → 다음 밤 계획의 공조 소비 보정에 사용.
+     * 앱이 밤사이 재시작돼도 DB의 미완료 기록(24시간 이내)을 찾아 마무리한다.
+     */
+    private fun recordWakeUp() {
+        val endSoc = GlobalFunction.batteryPctOrNull()
+        if (endSoc == null) {
+            GNCLog.w("[WakeActivity] 기상 배터리 미수신 → 이번 밤은 보정에 쓰지 않음")
+            return
+        }
+        val dao = SleepDatabase.getInstance(this).sleepRecordDao()
+        val now = System.currentTimeMillis()
+        Thread {
+            val night = dao.getOpenNight(since = now - 24 * 3_600_000L)
+            if (night == null) {
+                GNCLog.d("[WakeActivity] 마무리할 수면 기록 없음 (이미 기록됨 또는 시작 배터리 미상)")
+                return@Thread
+            }
+            dao.finishNight(night.id, endSoc, now)
+            val hours = (now - night.createdAt) / 3_600_000.0
+            GNCLog.i("[WakeActivity] 수면 기록 마무리 — id=${night.id}, 배터리 ${night.startSocPct}% → ${endSoc}%, ${"%.1f".format(hours)}시간, 예측 공조 ${night.predictedHvacKw}kW")
+        }.start()
     }
 
     private fun populatePhaseB() {
         val tempLabel = "${GlobalVariables.setTemperatureDeg}°C"
         val currentPct = GlobalFunction.batteryPct()
-        val overnightPct = GlobalVariables.overnightUsePct
+        // 잠들 때와 지금의 실제 배터리 차이. 둘 중 하나라도 모르면 밤 계획의 예측값
+        val startSoc = GlobalVariables.sleepStartSocPct
+        val nowSoc = GlobalFunction.batteryPctOrNull()
+        val overnightPct = if (startSoc >= 0 && nowSoc != null) (startSoc - nowSoc).coerceAtLeast(0)
+                           else GlobalVariables.overnightUsePct
+        GNCLog.i("[WakeActivity] 밤새 사용량 — ${if (startSoc >= 0 && nowSoc != null) "실측 $startSoc% → $nowSoc%" else "예측값"} = $overnightPct%")
         GNCLog.i("[WakeActivity] Phase B 채우기 — currentBat=${currentPct}%, overnightUse=${overnightPct}%, dest=${GlobalVariables.destinationName}, dist=${GlobalVariables.destinationDistanceKm}km")
 
         // 요약 배너

@@ -6,8 +6,12 @@ import android.widget.ImageButton
 import android.widget.TextView
 import com.example.pleostest.R
 import com.example.pleostest.global.GlobalFunction
+import com.example.pleostest.db.SleepDatabase
+import com.example.pleostest.db.SleepRecord
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.sdk.HomeTrip
+import com.example.pleostest.sdk.HvacCalibration
+import com.example.pleostest.sdk.OvernightHvac
 import com.example.pleostest.sdk.NaviManager
 import com.example.pleostest.sdk.TripEstimate
 import com.example.pleostest.sdk.TripResult
@@ -21,14 +25,40 @@ class PlanActivity : BaseActivity() {
     /** 순정 내비 requestTrip으로 받은 "집까지 필요 %". -1 = 아직 없음(앱 추정식 사용) */
     private var naviNeededPct = -1
 
+    /** 지난 밤 실측으로 구한 공조 소비 보정 계수 (DB 로드 전엔 보정 없음) */
+    private var hvacCalibration = HvacCalibration.NONE
+
+    /** 마지막으로 화면에 그린 예산 — [이대로 잘게요] 시 예측값을 기록에 남김 */
+    private var lastBudget: GlobalFunction.BatteryBudgetResult? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plan)
 
         naviManager.initialize()
-        populateViews()          // 우선 앱 추정식으로 즉시 표시
+        populateViews()          // 우선 기본 모델·앱 추정식으로 즉시 표시
         setupListeners()
         requestNaviEstimate()    // 내비 예측이 오면 다시 그림
+        loadHvacCalibration()    // 지난 밤 실측 보정이 로드되면 다시 그림
+    }
+
+    // ────────────────────────────────────────────────────────────────
+    // 밤새 공조 소비 — 지난 밤 실측 보정
+    // ────────────────────────────────────────────────────────────────
+
+    private fun loadHvacCalibration() {
+        val dao = SleepDatabase.getInstance(this).sleepRecordDao()
+        val capacityKwh = GlobalVariables.batteryCapacityWh / 1000.0
+        Thread {
+            val nights = dao.getMeasuredNights(CALIBRATION_NIGHTS).mapNotNull { it.toNightSample() }
+            val calibration = OvernightHvac.calibrate(nights, capacityKwh)
+            GNCLog.i("[PlanActivity] 공조 소비 보정 — 기록 ${nights.size}밤 중 유효 ${calibration.nights}밤, 계수 ${"%.2f".format(calibration.factor)}")
+            runOnUiThread {
+                if (isFinishing || isDestroyed || calibration.nights == 0) return@runOnUiThread
+                hvacCalibration = calibration
+                populateViews()
+            }
+        }.start()
     }
 
     override fun onDestroy() {
@@ -82,7 +112,8 @@ class PlanActivity : BaseActivity() {
         findViewById<TextView>(R.id.gc_plan_headline).text =
             getString(R.string.gc_plan_headline, tempLabel)
 
-        val budget = GlobalFunction.calculateBatteryBudget(naviNeededPct)
+        val budget = GlobalFunction.calculateBatteryBudget(naviNeededPct, hvacCalibration)
+        lastBudget = budget
         GNCLog.i("[PlanActivity] 배터리 예산 계산 결과 — current=${budget.currentPct}%, morning=${budget.morningPct}%, overnightUse=${budget.overnightUsePct}%, neededHome=${budget.neededForHomePct}%, reserve=${budget.reservePct}%, viable=${budget.isViable}")
 
         // GlobalVariables 갱신 (다른 화면에서도 참조)
@@ -101,7 +132,10 @@ class PlanActivity : BaseActivity() {
         )
         GlobalFunction.setStatItem(
             findViewById(R.id.gc_stat_overnight_use),
-            budget.overnightUsePct.toString(), "%", getString(R.string.gc_stat_overnight_use)
+            budget.overnightUsePct.toString(), "%",
+            if (budget.calibrationNights > 0)
+                getString(R.string.gc_stat_overnight_use_calibrated, budget.calibrationNights)
+            else getString(R.string.gc_stat_overnight_use)
         )
         GlobalFunction.setStatItem(
             findViewById(R.id.gc_stat_needed_home),
@@ -146,9 +180,15 @@ class PlanActivity : BaseActivity() {
     }
 
     private fun saveSleepRecord() {
-        GNCLog.i("[PlanActivity] 수면 기록 저장 — dest=${GlobalVariables.destinationName}, wakeTime=${GlobalVariables.wakeTime}, temp=${GlobalVariables.setTemperatureDeg}°C, guests=${GlobalVariables.guestCount}명")
-        val db = com.example.pleostest.db.SleepDatabase.getInstance(this)
-        val record = com.example.pleostest.db.SleepRecord(
+        // 잠들 때 실제 배터리 — 기상 시 실측 밤새 사용량·다음 보정에 사용 (미수신이면 기록 안 함)
+        val startSoc = GlobalFunction.batteryPctOrNull()
+        GlobalVariables.sleepStartSocPct = startSoc ?: -1
+        GNCLog.i("[PlanActivity] 수면 기록 저장 — dest=${GlobalVariables.destinationName}, wakeTime=${GlobalVariables.wakeTime}, temp=${GlobalVariables.setTemperatureDeg}°C, guests=${GlobalVariables.guestCount}명, startSoc=${startSoc ?: "미상"}, 예측 공조=${lastBudget?.baseHvacKw}kW")
+        val db = SleepDatabase.getInstance(this)
+        val record = SleepRecord(
+            startSocPct = startSoc,
+            outsideTempC = GlobalFunction.temperatureCelsius().toDouble(),
+            predictedHvacKw = lastBudget?.baseHvacKw ?: 0.0,
             destinationName = GlobalVariables.destinationName,
             destinationDistanceKm = GlobalVariables.destinationDistanceKm,
             destinationLat = GlobalVariables.destinationLat,
@@ -167,5 +207,10 @@ class PlanActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         refreshHeaderLocation()
+    }
+
+    companion object {
+        /** 보정에 쓸 최근 밤 수 */
+        private const val CALIBRATION_NIGHTS = 10
     }
 }

@@ -35,6 +35,8 @@ public class GlobalVariables {
     // 밤 계획 결과 (밤 계획 만들기 이후 채워짐)
     public static int morningBatteryPct = 0;
     public static int overnightUsePct = 0;
+    // 잠들 때 실제 배터리 % (-1 = 미상) — 기상 화면에서 실측 밤새 사용량 계산
+    public static int sleepStartSocPct = -1;
 
     // 캠핑 모드 시작 시각 (분 단위, -1 = 미시작)
     public static int campingStartMin = -1;

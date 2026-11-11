@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [SleepRecord::class], version = 2, exportSchema = false)
+@Database(entities = [SleepRecord::class], version = 3, exportSchema = false)
 abstract class SleepDatabase : RoomDatabase() {
     abstract fun sleepRecordDao(): SleepRecordDao
 
@@ -22,13 +22,24 @@ abstract class SleepDatabase : RoomDatabase() {
             }
         }
 
+        /** v3: 밤새 공조 소비 실측 보정용 컬럼 (기존 기록은 미측정) */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sleep_records ADD COLUMN startSocPct INTEGER")
+                db.execSQL("ALTER TABLE sleep_records ADD COLUMN outsideTempC REAL")
+                db.execSQL("ALTER TABLE sleep_records ADD COLUMN predictedHvacKw REAL NOT NULL DEFAULT 0.0")
+                db.execSQL("ALTER TABLE sleep_records ADD COLUMN endSocPct INTEGER")
+                db.execSQL("ALTER TABLE sleep_records ADD COLUMN endedAt INTEGER")
+            }
+        }
+
         fun getInstance(context: Context): SleepDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     SleepDatabase::class.java,
                     "sleep_records.db"
-                ).addMigrations(MIGRATION_1_2).build().also { INSTANCE = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { INSTANCE = it }
             }
     }
 }

@@ -82,7 +82,8 @@ automotive/src/main/
 │   │   ├── LocationManager.kt       # Pleos FusedLocation 래퍼 — GPS (현재 SDK 지원 X -> 기존 android sdk 사용)
 │   │   ├── NaviManager.kt           # Pleos NaviHelper 래퍼 — 즐겨찾기·목적지 조회, 귀가 경로 요청
 │   │   ├── HomeRoute.kt             # HOME 즐겨찾기 → RouteInfo 변환 + 귀가 경로 결과 타입
-│   │   └── HomeTrip.kt              # 귀가 예측(requestTrip) 요청·응답 변환 + 결과 타입
+│   │   ├── HomeTrip.kt              # 귀가 예측(requestTrip) 요청·응답 변환 + 결과 타입
+│   │   └── OvernightHvac.kt         # 밤새 공조 소비 모델 + 지난 밤 실측 보정
 │   │
 │   ├── dialog/
 │   │   ├── GcTimePickerDialog.kt    # 기상 시각 선택 다이얼로그
@@ -155,8 +156,18 @@ automotive/src/main/
 - 내비 서비스 연결(`initialize` 성공 콜백) 전 요청은 큐에 보관 후 연결 시 실행
 - 주의: 내비는 `onTripInfo`를 연결된 모든 클라이언트에 보냄 → 대기 중 다른 앱이 `requestTrip`하면 그 결과를 받을 수 있음
 
-**밤새 공조 소비량 — 앱 자체 추정식 유지**
-- Pleos SDK에 공조 소비 전력·예측 API 없음 (Vehicle SDK 2.3.2 HVAC는 상태 조회·제어만, NaviHelper는 주행 에너지만)
+**밤새 공조 소비량 — 기본 모델 × 내 차 실측 보정 (`sdk/OvernightHvac.kt`)**
+- Pleos SDK에 공조 소비 전력·예측 API 없음 (Vehicle SDK 2.3.2 HVAC는 상태 조회·제어만, NaviHelper는 주행 에너지만) → 앱이 추정
+- 기본 모델 (0.2 ~ 4.0kW 제한)
+  - 난방: `0.3kW + 0.06kW/°C × (설정 − 외기) − 0.08kW × 추가 인원`
+    - 공개 실측(테슬라 혹한 차박, 실내 20°C: −13°C 1.45 / −17°C 2.4 / −22°C 3.8 kWh·h) 범위에 맞춘 계수
+  - 냉방: `0.3kW + 0.03kW/°C × (외기 − 설정) + 0.04kW × 추가 인원` — 실측 근거 없는 가정치 (기존 식은 냉방을 0으로 봤음)
+- 실측 보정: [이대로 잘게요] 시 시작 배터리 %·예측 kW 기록 → [일어날게요] 시 종료 배터리 % 기록 (`sleep_records` v3)
+  - 다음 계획부터 `실제 소비 ÷ (예측 kW × 실제 잔 시간)`의 중앙값으로 보정, 기록이 적으면 1.0 쪽으로: `1 + (중앙값 − 1) × n ÷ (n + 2)`, 0.5 ~ 2.5 제한
+  - 제외: 2시간 미만(1% 해상도 = 0.77kWh), 배터리가 늘어난 밤(충전), 시작/종료 배터리 미수신
+  - 표시: stat 라벨 "밤새 사용 · 내 기록 N밤 보정"
+- 기상 화면 "밤새 사용"은 예측값 대신 실측(잠들 때 % − 지금 %), 모르면 예측값
+- 주의: 앱은 차량 공조를 제어하지 않음 → 사용자가 차에서 같은 온도로 AUTO를 켜고 유틸리티 모드를 유지해야 모델 전제("설정 온도 유지")가 맞음
 - AAOS VHAL `EV_BATTERY_INSTANTANEOUS_CHARGE_RATE`(순간 충방전 전력)는 `android.car.permission.CAR_ENERGY`(dangerous)로 앱에서 읽기 가능함을 확인
   - 단, 에뮬레이터는 0W 고정이라 공조 연동 여부 미검증 · 차량 전체 소비량이며 예측값 아님 → 실차에서 추정식 보정용 후보
 - [수정] → SetUpActivity 복귀

@@ -55,6 +55,7 @@
     <string name="gc_stat_now">Now</string>
     <string name="gc_stat_morning">By morning</string>
     <string name="gc_stat_overnight_use">Used overnight</string>
+    <string name="gc_stat_overnight_use_calibrated">Overnight · tuned by %1$d nights</string>
     <string name="gc_stat_needed_home">Needed for home</string>
     <string name="gc_stat_needed_home_navi">Needed for home · Navi</string>
     <string name="gc_plan_budget">Battery budget</string>
