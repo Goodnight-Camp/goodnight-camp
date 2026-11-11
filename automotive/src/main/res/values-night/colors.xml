@@ -1,62 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  굿나잇 캠프 · Pleos Color (Dark)
-  Figma 파일의 "Pleos Color / Dark" 컬렉션과 1:1로 대응합니다.
-  시스템이 다크 모드일 때 values/colors.xml 대신 자동으로 쓰입니다.
+  굿나잇 캠프 · 밤 팔레트 (Night)
+  디자인 기준: Goodnight-Camp/.github 레포의 DESIGN.md (레퍼런스 hyundai — 네이비·시안 톤)
+  앱 기본 테마가 밤(MODE_NIGHT_YES)이라 설정·계획·캠핑·수면 화면은 이 값을 쓴다.
+  토큰 이름은 values/colors.xml(아침 팔레트)과 같다. 알파는 #AARRGGBB.
 -->
 <resources>
-    <!-- Background / Surface -->
-    <color name="background_primary">#131417</color>
-    <color name="surface_basic">#1D1E21</color>
-    <color name="surface_high">#313236</color>
-    <color name="border_card">#2A2B2F</color>
-    <color name="divider_primary">#1AFFFFFF</color>
+    <!-- Background / Surface — 깊은 네이비, 그림자 대신 명도 차이로 층 구분 -->
+    <color name="background_primary">#0B1322</color>
+    <color name="surface_basic">#121D30</color>
+    <color name="surface_high">#1B2940</color>
+    <color name="border_card">#22334D</color>
+    <color name="divider_primary">#1FFFFFFF</color>
 
-    <!-- Text -->
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#D6FFFFFF</color>
-    <color name="text_tertiary">#A3FFFFFF</color>
-    <color name="text_quaternary">#52FFFFFF</color>
-    <color name="text_on_filled">#131417</color>
+    <!-- Text — 순백 대신 살짝 푸른 흰색 (밤 눈부심 완화) -->
+    <color name="text_primary">#F2F5F9</color>
+    <color name="text_secondary">#D9F2F5F9</color>
+    <color name="text_tertiary">#A3F2F5F9</color>
+    <color name="text_quaternary">#6BF2F5F9</color>
+    <color name="text_on_filled">#06121F</color>
 
-    <!-- Button -->
+    <!-- Button — 주 동작은 현대 시안, 보조 동작은 반투명 -->
     <color name="button_basic_enabled">#14FFFFFF</color>
     <color name="button_basic_pressed">#26FFFFFF</color>
-    <color name="button_basic_disabled">#0DFFFFFF</color>
-    <color name="button_filled_enabled">#E0E1E6</color>
-    <color name="button_filled_pressed">#C7C9CE</color>
+    <color name="button_basic_disabled">#0AFFFFFF</color>
+    <color name="button_filled_enabled">#00AAD2</color>
+    <color name="button_filled_pressed">#0090B3</color>
 
     <!-- Informative -->
-    <color name="informative_active">#00E074</color>
-    <color name="informative_positive">#0082FF</color>
-    <color name="informative_negative">#FF4C28</color>
-    <color name="informative_night">#6A57FF</color>
-    <color name="regulation_orange">#FF8A00</color>
+    <color name="informative_active">#2BD98A</color>
+    <color name="informative_positive">#4DA3FF</color>
+    <color name="informative_negative">#FF6A4D</color>
+    <color name="informative_night">#5CC8E8</color>
+    <color name="regulation_orange">#FFA233</color>
 
-    <!-- Tint -->
-    <color name="tint_negative">#2EFF4C28</color>
-    <color name="tint_active">#2900E074</color>
-    <color name="tint_night">#386A57FF</color>
-    <color name="tint_orange">#2EFF8A00</color>
+    <!-- Tint (칩·아이콘 박스·단계) -->
+    <color name="tint_negative">#24FF6A4D</color>
+    <color name="tint_active">#242BD98A</color>
+    <color name="tint_night">#245CC8E8</color>
+    <color name="tint_orange">#24FFA233</color>
 
     <!-- Switch -->
-    <color name="switch_on">#00E074</color>
-    <color name="switch_off">#4DFFFFFF</color>
-    <color name="switch_knob">#FFFFFF</color>
+    <color name="switch_on">#00AAD2</color>
+    <color name="switch_off">#3DF2F5F9</color>
+    <color name="switch_knob">#F2F5F9</color>
 
     <!-- 수면 중 -->
-    <color name="sleep_background">#000000</color>
-    <color name="sleep_text">#52FFFFFF</color>
-    <color name="sleep_text_dim">#29FFFFFF</color>
+    <color name="sleep_background">#05080F</color>
+    <color name="sleep_text">#66FFFFFF</color>
+    <color name="sleep_text_dim">#33FFFFFF</color>
 
-    <!-- 일출 그래픽 -->
-    <color name="sunrise_start">#1B1A3A</color>
+    <!-- 일출 그래픽 (밤 화면에서 쓸 때) -->
+    <color name="sunrise_start">#1B2340</color>
     <color name="sunrise_end">#6B3A1E</color>
     <color name="sunrise_sun">#FFB547</color>
 
     <!-- 목적지 검색 목록 -->
-    <color name="gnc_text">#FFFFFF</color>
-    <color name="gnc_text_dim">#D6FFFFFF</color>
-    <color name="gnc_text_sub">#A3FFFFFF</color>
-    <color name="gnc_line">#1AFFFFFF</color>
+    <color name="gnc_text">#F2F5F9</color>
+    <color name="gnc_text_dim">#D9F2F5F9</color>
+    <color name="gnc_text_sub">#A3F2F5F9</color>
+    <color name="gnc_line">#1FFFFFFF</color>
+    <color name="gnc_accent">#00AAD2</color>
+    <color name="gnc_border">#22334D</color>
+    <color name="gnc_bg">#121D30</color>
+    <color name="gnc_surface">#0B1322</color>
 </resources>

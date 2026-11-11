@@ -97,6 +97,25 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
                 </LinearLayout>
+
+                <View
+                    style="@style/Widget.GC.Divider"
+                    android:layout_marginTop="@dimen/gc_space_32" />
+
+                <!-- 아침까지 차가 할 일 — 기상 시퀀스 시간표 (CampingActivity.populateTimeline) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_28"
+                    android:text="@string/gc_camping_timeline_title"
+                    android:textAppearance="@style/TextAppearance.GC.CardTitle" />
+
+                <LinearLayout
+                    android:id="@+id/gc_camping_timeline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_8"
+                    android:orientation="vertical" />
             </LinearLayout>
 
             <!-- 오른쪽: 지금 차가 하는 일 + 종료 버튼 -->
@@ -167,7 +186,7 @@
 
                     <View style="@style/Widget.GC.Divider" />
 
-                    <!-- 환기 -->
+                    <!-- 아침 예상 잔량 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -179,7 +198,7 @@
                         <ImageView
                             style="@style/Widget.GC.IconBox.Small"
                             android:importantForAccessibility="no"
-                            android:src="@drawable/gc_ic_wind" />
+                            android:src="@drawable/gc_ic_battery" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -191,27 +210,22 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/gc_care_ventilation"
+                                android:text="@string/gc_camping_morning_label"
                                 android:textAppearance="@style/TextAppearance.GC.Label" />
 
                             <TextView
+                                android:id="@+id/gc_camping_morning_value"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/gc_care_ventilation_value"
-                                android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                tools:text="81% · 집까지 12% 남겨둬요" />
                         </LinearLayout>
 
-                        <ImageView
-                            android:layout_width="@dimen/gc_icon_md"
-                            android:layout_height="@dimen/gc_icon_md"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/gc_ic_check"
-                            app:tint="@color/informative_active" />
                     </LinearLayout>
 
                     <View style="@style/Widget.GC.Divider" />
 
-                    <!-- 성애제거 -->
+                    <!-- 내일 갈 곳 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -223,7 +237,7 @@
                         <ImageView
                             style="@style/Widget.GC.IconBox.Small"
                             android:importantForAccessibility="no"
-                            android:src="@drawable/gc_ic_thermometer" />
+                            android:src="@drawable/gc_ic_home" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -235,22 +249,19 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/gc_care_defrost"
+                                android:text="@string/gc_setting_destination"
                                 android:textAppearance="@style/TextAppearance.GC.Label" />
 
                             <TextView
+                                android:id="@+id/gc_camping_dest_value"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/gc_care_defrost_value"
-                                android:textAppearance="@style/TextAppearance.GC.RowValue" />
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:textAppearance="@style/TextAppearance.GC.RowValue"
+                                tools:text="집 · 마포구 182 km" />
                         </LinearLayout>
 
-                        <ImageView
-                            android:layout_width="@dimen/gc_icon_md"
-                            android:layout_height="@dimen/gc_icon_md"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/gc_ic_check"
-                            app:tint="@color/informative_active" />
                     </LinearLayout>
                 </LinearLayout>
 

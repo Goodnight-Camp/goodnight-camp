@@ -32,7 +32,7 @@
     <string name="gc_setting_sunrise">Sunrise %1$s</string>
     <string name="gc_setting_destination">Destination</string>
     <string name="gc_setting_temperature">Target temperature</string>
-    <string name="gc_setting_reserve">Spare battery</string>
+    <string name="gc_setting_reserve">Battery left on arrival</string>
     <string name="gc_setting_reserve_hint">on arrival</string>
     <string name="gc_setting_guests">Sleeping guests</string>
     <string name="gc_setting_guests_unit">ppl</string>
@@ -45,7 +45,7 @@
     <string name="gc_action_decrease">Decrease</string>
     <string name="gc_action_increase">Increase</string>
     <string name="gc_action_save_schedule">Save schedule only</string>
-    <string name="gc_action_make_plan">Create night plan</string>
+    <string name="gc_action_make_plan">Start Goodnight</string>
 
     <!-- ② Night plan -->
     <string name="gc_plan_subtitle">Tonight\'s plan</string>
@@ -139,4 +139,41 @@
     <string name="gc_wake_tts_heat">seat warming</string>
     <string name="gc_wake_tts_outside">It\'s %1$d degrees outside.</string>
     <string name="gc_wake_demo_started">Wake-up demo — alarm in 1 minute</string>
+    <!-- Camping timeline -->
+    <string name="gc_camping_timeline_title">What the car will do by morning</string>
+    <string name="gc_camping_morning_label">Charge by morning</string>
+    <string name="gc_camping_morning_value">%1$d%% · %2$d%% kept for home</string>
+    <string name="gc_tl_defrost">Defrost</string>
+    <string name="gc_tl_defrost_sub">Front and rear glass · climate on</string>
+    <string name="gc_tl_defrost_sub_mirror">Front and rear glass · mirror heat</string>
+    <string name="gc_tl_heat">Pre-heat</string>
+    <string name="gc_tl_heat_sub">Steering wheel · occupied seats</string>
+    <string name="gc_tl_vent_seat">Seat cooling</string>
+    <string name="gc_tl_vent_seat_sub">Occupied seats</string>
+    <string name="gc_tl_light">Light · fresh air</string>
+    <string name="gc_tl_light_sub">Fades in like sunrise · outside air</string>
+    <string name="gc_tl_light_sub_window">Fades in like sunrise · window cracked</string>
+    <string name="gc_tl_alarm">Wake up</string>
+    <string name="gc_tl_alarm_sub">Alarm · voice message</string>
+    <!-- Wake screen record -->
+    <string name="gc_wake_record_range">Slept → woke up</string>
+    <string name="gc_wake_record_duration">Time asleep</string>
+    <string name="gc_wake_arrival_label">Arriving home</string>
+    <string name="gc_duration_hm">%1$dh %2$dm</string>
+    <string name="gc_wake_greeting">Did you sleep well?</string>
+    <string name="gc_wake_feedback_title">How was last night?</string>
+    <string name="gc_wake_feedback_good">Just right</string>
+    <string name="gc_wake_feedback_hot">Too warm</string>
+    <string name="gc_wake_feedback_cold">Too cold</string>
+    <string name="gc_wake_bat_current_label">Battery now</string>
+    <string name="gc_wake_end_subtitle">Camping finished</string>
+    <string name="gc_label_cabin">Cabin</string>
+    <!-- Setup tiles -->
+    <string name="gc_setup_wake_title">Wake me up at</string>
+    <string name="gc_reserve_hint_low">Only what you really need</string>
+    <string name="gc_reserve_hint_mid">Enough to reach a charger</string>
+    <string name="gc_reserve_hint_high">Plenty for your next plans</string>
+    <!-- Plan — temperature forecast -->
+    <string name="gc_plan_forecast_used">Hourly forecast applied · overnight low %1$d°C</string>
+    <string name="gc_plan_forecast_none">No forecast — assumes today\'s temperature holds overnight</string>
 </resources>

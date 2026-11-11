@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ① 설정 · Figma "GC/01 설정"
-  왼쪽: 지금 차 상태(배터리·바깥 온도·유틸리티 모드), 내일 갈 곳
-  오른쪽: 오늘 밤 설정 4개 행(기상 시간, 목적지, 온도, 여유 배터리) + 하단 버튼
+  ① 첫 화면 — 오늘 밤 설정 (타일 구성)
+  왼쪽 메인 카드: 내일 아침 기상 시각(탭 → 시간 선택) + 지금 차 상태(실내·바깥 온도)
+  오른쪽: 내일 갈 곳 타일(탭 → 검색) · 도착할 때 남길 배터리 타일(슬라이더) · 함께 자는 인원 타일 · [굿나잇 시작]
+  온도는 사용자가 정하지 않고 차에 설정된 공조 온도를 그대로 씀 (VehicleManager)
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Widget.GC.AppRoot"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <include
         android:id="@+id/gc_header"
@@ -24,487 +24,299 @@
         android:baselineAligned="false"
         android:orientation="horizontal">
 
-        <!-- ===== 왼쪽 ===== -->
+        <!-- ════════ 왼쪽: 내일 아침 + 지금 차 상태 ════════ -->
         <LinearLayout
-            android:layout_width="@dimen/gc_left_column"
+            android:id="@+id/gc_row_wake_time"
+            style="@style/Widget.GC.Card"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_weight="1"
+            android:background="@drawable/gc_bg_card_pressable"
+            android:clickable="true"
+            android:focusable="true">
 
-            <!-- 지금 차 상태 -->
             <LinearLayout
-                android:id="@+id/gc_card_car_status"
-                style="@style/Widget.GC.Card"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:baselineAligned="true"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/gc_setup_car_status"
-                        android:textAppearance="@style/TextAppearance.GC.CardTitle" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/gc_card_gap"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <include
-                        android:id="@+id/gc_stat_battery"
-                        layout="@layout/gc_item_stat"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1" />
-
-                    <View style="@style/Widget.GC.Divider.Vertical" />
-
-                    <include
-                        android:id="@+id/gc_stat_outside"
-                        layout="@layout/gc_item_stat"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- 최근 수면 기록 -->
-            <LinearLayout
-                android:id="@+id/gc_card_sleep_records"
-                style="@style/Widget.GC.Card"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="@dimen/gc_gap"
-                android:layout_weight="1">
+                <ImageView
+                    style="@style/Widget.GC.IconBox.Night"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_sunrise" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/gc_setup_destination_title"
+                    android:layout_marginStart="@dimen/gc_space_20"
+                    android:layout_weight="1"
+                    android:text="@string/gc_setup_wake_title"
                     android:textAppearance="@style/TextAppearance.GC.CardTitle" />
 
-                <ScrollView
-                    android:id="@+id/gc_sleep_records_scroll"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="@dimen/gc_card_gap"
-                    android:layout_weight="1"
-                    android:scrollbars="none">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gc_action_change"
+                    android:textAppearance="@style/TextAppearance.GC.Label"
+                    android:textColor="@color/informative_night" />
+            </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/gc_sleep_records_container"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical" />
-                </ScrollView>
+            <!-- 큰 기상 시각 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/gc_sleep_records_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="@string/gc_setup_records_empty"
-                    android:textAppearance="@style/TextAppearance.GC.Label"
-                    android:visibility="gone" />
+                    android:id="@+id/gc_wake_time_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gc_asta_sans"
+                    android:includeFontPadding="false"
+                    android:textColor="@color/text_primary"
+                    android:textFontWeight="300"
+                    android:textSize="@dimen/gc_text_sleep_clock"
+                    tools:text="06:30" />
+
+                <TextView
+                    android:id="@+id/gc_wake_time_sunrise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/gc_space_8"
+                    android:textAppearance="@style/TextAppearance.GC.LabelLg"
+                    tools:text="일출 07:12" />
+            </LinearLayout>
+
+            <View style="@style/Widget.GC.Divider" />
+
+            <!-- 지금 차 상태 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gc_space_24"
+                android:text="@string/gc_setup_car_status"
+                android:textAppearance="@style/TextAppearance.GC.Label" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/gc_space_12"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/gc_stat_cabin"
+                    layout="@layout/gc_item_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <View style="@style/Widget.GC.Divider.Vertical" />
+
+                <include
+                    android:id="@+id/gc_stat_outside"
+                    layout="@layout/gc_item_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- ===== 오른쪽 ===== -->
+        <!-- ════════ 오른쪽: 타일 + 시작 버튼 ════════ -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="@dimen/gc_gap"
-            android:layout_weight="1"
+            android:layout_weight="1.25"
             android:orientation="vertical">
 
+            <!-- 내일 갈 곳 — 카드 전체를 눌러 변경 -->
             <LinearLayout
-                android:id="@+id/gc_card_tonight"
+                android:id="@+id/gc_destination_change"
                 style="@style/Widget.GC.Card"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                android:paddingTop="@dimen/gc_space_28"
-                android:paddingBottom="@dimen/gc_space_12">
+                android:layout_weight="0.75"
+                android:background="@drawable/gc_bg_card_pressable"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    style="@style/Widget.GC.IconBox.Night"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/gc_ic_pin" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingBottom="@dimen/gc_space_8">
+                    android:layout_marginStart="@dimen/gc_space_24"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/gc_setup_tonight"
-                        android:textAppearance="@style/TextAppearance.GC.CardTitle" />
-                </LinearLayout>
-
-                <!-- 행 1: 일어날 시간 -->
-                <LinearLayout
-                    android:id="@+id/gc_row_wake_time"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingTop="@dimen/gc_space_30"
-                    android:paddingBottom="@dimen/gc_space_30"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground">
-
-                    <ImageView
-                        style="@style/Widget.GC.IconBox"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/gc_ic_clock" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/gc_space_28"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/gc_setting_wake_time"
-                            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/gc_space_4"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:id="@+id/gc_wake_time_value"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="@style/TextAppearance.GC.SettingValue"
-                                tools:text="06:30" />
-
-                            <TextView
-                                android:id="@+id/gc_wake_time_sunrise"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/gc_space_16"
-                                android:textAppearance="@style/TextAppearance.GC.LabelLg"
-                                tools:text="일출 06:52" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        style="@style/Widget.GC.IconBox"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/gc_ic_chevron_down" />
-                </LinearLayout>
-
-                <View style="@style/Widget.GC.Divider" />
-
-                <!-- 행 2: 최근 목적지 -->
-                <LinearLayout
-                    android:id="@+id/gc_row_destination"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingTop="@dimen/gc_space_30"
-                    android:paddingBottom="@dimen/gc_space_30">
-
-                    <ImageView
-                        style="@style/Widget.GC.IconBox"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/gc_ic_pin" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/gc_space_28"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/gc_setting_destination"
-                            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/gc_space_4"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:id="@+id/gc_destination_value"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/gc_destination_home"
-                                android:textAppearance="@style/TextAppearance.GC.SettingValue" />
-
-                            <TextView
-                                android:id="@+id/gc_destination_value_distance"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/gc_space_16"
-                                android:textAppearance="@style/TextAppearance.GC.LabelLg"
-                                tools:text="182 km" />
-                        </LinearLayout>
-                    </LinearLayout>
+                        android:text="@string/gc_setting_destination"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
 
                     <TextView
-                        android:id="@+id/gc_destination_change"
-                        style="@style/Widget.GC.Button.Small"
-                        android:layout_width="wrap_content"
-                        android:text="@string/gc_action_change" />
-                </LinearLayout>
-
-                <View style="@style/Widget.GC.Divider" />
-
-                <!-- 행 3: 원하는 온도 -->
-                <LinearLayout
-                    android:id="@+id/gc_row_temperature"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingTop="@dimen/gc_space_30"
-                    android:paddingBottom="@dimen/gc_space_30">
-
-                    <ImageView
-                        style="@style/Widget.GC.IconBox"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/gc_ic_thermometer" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
+                        android:id="@+id/gc_destination_value"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/gc_space_28"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_marginTop="@dimen/gc_space_6"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.GC.HeadlineMd"
+                        tools:text="집 · 마포구" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/gc_setting_temperature"
-                            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
-
-                        <TextView
-                            android:id="@+id/gc_temperature_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/gc_space_4"
-                            android:textAppearance="@style/TextAppearance.GC.SettingValue"
-                            tools:text="20°C" />
-                    </LinearLayout>
-
-                    <ImageButton
-                        android:id="@+id/gc_temperature_minus"
-                        style="@style/Widget.GC.IconButton"
-                        android:contentDescription="@string/gc_action_decrease"
-                        android:src="@drawable/gc_ic_minus" />
-
-                    <ImageButton
-                        android:id="@+id/gc_temperature_plus"
-                        style="@style/Widget.GC.IconButton"
-                        android:layout_marginStart="@dimen/gc_space_12"
-                        android:contentDescription="@string/gc_action_increase"
-                        android:src="@drawable/gc_ic_plus" />
-                </LinearLayout>
-
-                <View style="@style/Widget.GC.Divider" />
-
-                <!-- 행 4: 여유 배터리 (세그먼트) -->
-                <LinearLayout
-                    android:id="@+id/gc_row_reserve"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingTop="@dimen/gc_space_30"
-                    android:paddingBottom="@dimen/gc_space_30">
-
-                    <ImageView
-                        style="@style/Widget.GC.IconBox"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/gc_ic_battery" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/gc_space_28"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/gc_setting_reserve"
-                            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/gc_space_4"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:id="@+id/gc_reserve_value"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="@style/TextAppearance.GC.SettingValue"
-                                tools:text="10%" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/gc_space_16"
-                                android:text="@string/gc_setting_reserve_hint"
-                                android:textAppearance="@style/TextAppearance.GC.LabelLg" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <RadioGroup
-                        android:id="@+id/gc_reserve_segment"
+                    <TextView
+                        android:id="@+id/gc_destination_value_distance"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/gc_bg_segment_track"
-                        android:checkedButton="@+id/gc_reserve_10"
-                        android:orientation="horizontal"
-                        android:padding="@dimen/gc_space_6">
-
-                        <RadioButton
-                            android:id="@+id/gc_reserve_5"
-                            android:layout_width="@dimen/gc_segment_width"
-                            android:layout_height="@dimen/gc_segment_height"
-                            android:background="@drawable/gc_bg_segment_item"
-                            android:button="@null"
-                            android:gravity="center"
-                            android:text="5%"
-                            android:textAppearance="@style/TextAppearance.GC.StatUnit"
-                            android:textColor="@color/gc_segment_text" />
-
-                        <RadioButton
-                            android:id="@+id/gc_reserve_10"
-                            android:layout_width="@dimen/gc_segment_width"
-                            android:layout_height="@dimen/gc_segment_height"
-                            android:layout_marginStart="@dimen/gc_space_4"
-                            android:background="@drawable/gc_bg_segment_item"
-                            android:button="@null"
-                            android:elevation="@dimen/gc_space_2"
-                            android:gravity="center"
-                            android:text="10%"
-                            android:textAppearance="@style/TextAppearance.GC.StatUnit"
-                            android:textColor="@color/gc_segment_text" />
-
-                        <RadioButton
-                            android:id="@+id/gc_reserve_15"
-                            android:layout_width="@dimen/gc_segment_width"
-                            android:layout_height="@dimen/gc_segment_height"
-                            android:layout_marginStart="@dimen/gc_space_4"
-                            android:background="@drawable/gc_bg_segment_item"
-                            android:button="@null"
-                            android:gravity="center"
-                            android:text="15%"
-                            android:textAppearance="@style/TextAppearance.GC.StatUnit"
-                            android:textColor="@color/gc_segment_text" />
-                    </RadioGroup>
+                        android:layout_marginTop="@dimen/gc_space_4"
+                        android:textAppearance="@style/TextAppearance.GC.LabelLg"
+                        tools:text="182 km" />
                 </LinearLayout>
 
-                <View style="@style/Widget.GC.Divider" />
+                <ImageView
+                    android:layout_width="@dimen/gc_icon_lg"
+                    android:layout_height="@dimen/gc_icon_lg"
+                    android:importantForAccessibility="no"
+                    android:rotation="-90"
+                    android:src="@drawable/gc_ic_chevron_down"
+                    app:tint="@color/text_tertiary" />
+            </LinearLayout>
 
-                <!-- 행 5: 자는 인원 -->
+            <!-- 배터리 · 인원 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/gc_gap_sm"
+                android:layout_weight="1.3"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <!-- 도착할 때 남길 배터리 — 슬라이더로 자유롭게 -->
                 <LinearLayout
-                    android:id="@+id/gc_row_guests"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingTop="@dimen/gc_space_30"
-                    android:paddingBottom="@dimen/gc_space_30">
+                    style="@style/Widget.GC.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.6">
 
-                    <ImageView
-                        style="@style/Widget.GC.IconBox"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/gc_ic_seat" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_setting_reserve"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
 
                     <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/gc_space_28"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
                         android:layout_weight="1"
+                        android:gravity="center_vertical"
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/gc_reserve_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/gc_setting_guests"
-                            android:textAppearance="@style/TextAppearance.GC.LabelLg" />
+                            android:textAppearance="@style/TextAppearance.GC.Headline"
+                            tools:text="10%" />
+
+                        <SeekBar
+                            android:id="@+id/gc_reserve_slider"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/gc_seek_thumb"
+                            android:layout_marginVertical="@dimen/gc_space_12"
+                            android:max="50"
+                            android:min="5"
+                            android:paddingStart="@dimen/gc_space_24"
+                            android:paddingEnd="@dimen/gc_space_24"
+                            android:progressDrawable="@drawable/gc_seek_track"
+                            android:splitTrack="false"
+                            android:thumb="@drawable/gc_seek_thumb"
+                            android:thumbOffset="0dp"
+                            tools:progress="10" />
+
+                        <TextView
+                            android:id="@+id/gc_reserve_hint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.GC.Label"
+                            tools:text="도착해서 충전소까지 넉넉해요" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 함께 자는 인원 -->
+                <LinearLayout
+                    style="@style/Widget.GC.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/gc_gap_sm"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gc_setting_guests"
+                        android:textAppearance="@style/TextAppearance.GC.Label" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <ImageButton
+                            android:id="@+id/gc_guests_minus"
+                            style="@style/Widget.GC.IconButton"
+                            android:contentDescription="@string/gc_action_decrease"
+                            android:src="@drawable/gc_ic_minus" />
 
                         <LinearLayout
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/gc_space_4"
+                            android:layout_weight="1"
+                            android:gravity="center"
                             android:orientation="horizontal">
 
                             <TextView
                                 android:id="@+id/gc_guests_value"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textAppearance="@style/TextAppearance.GC.SettingValue"
+                                android:textAppearance="@style/TextAppearance.GC.Headline"
                                 tools:text="2" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/gc_space_4"
+                                android:layout_marginStart="@dimen/gc_space_6"
                                 android:text="@string/gc_setting_guests_unit"
                                 android:textAppearance="@style/TextAppearance.GC.LabelLg" />
                         </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/gc_guests_plus"
+                            style="@style/Widget.GC.IconButton"
+                            android:contentDescription="@string/gc_action_increase"
+                            android:src="@drawable/gc_ic_plus" />
                     </LinearLayout>
-
-                    <ImageButton
-                        android:id="@+id/gc_guests_minus"
-                        style="@style/Widget.GC.IconButton"
-                        android:contentDescription="@string/gc_action_decrease"
-                        android:src="@drawable/gc_ic_minus" />
-
-                    <ImageButton
-                        android:id="@+id/gc_guests_plus"
-                        style="@style/Widget.GC.IconButton"
-                        android:layout_marginStart="@dimen/gc_space_12"
-                        android:contentDescription="@string/gc_action_increase"
-                        android:src="@drawable/gc_ic_plus" />
                 </LinearLayout>
-
             </LinearLayout>
 
-
-            <!-- 하단 버튼 -->
-            <LinearLayout
+            <!-- 굿나잇 시작 -->
+            <TextView
+                android:id="@+id/gc_action_make_plan"
+                style="@style/Widget.GC.Button.Filled"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/gc_gap"
-                android:orientation="horizontal">
-
-
-                <TextView
-                    android:id="@+id/gc_action_make_plan"
-                    style="@style/Widget.GC.Button.Filled"
-                    android:layout_width="0dp"
-                    android:layout_marginStart="@dimen/gc_gap_sm"
-                    android:layout_weight="2"
-                    android:text="@string/gc_action_make_plan" />
-            </LinearLayout>
+                android:text="@string/gc_action_make_plan" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

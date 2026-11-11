@@ -6,6 +6,8 @@ public class GlobalVariables {
     // 차량 상태 (SDK에서 갱신)
     public static String curBattery = "-";
     public static String outTemperature = "-";
+    // 실내 온도 (Pleos HVAC getHvacTemperatureCurrent) — "-" = 미수신
+    public static String cabinTemperature = "-";
     public static String locationName = "로딩 중..";
     public static double currentLat = 0.0;
     public static double currentLng = 0.0;

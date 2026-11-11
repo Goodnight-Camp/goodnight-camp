@@ -4,6 +4,9 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import com.example.pleostest.R
 import com.example.pleostest.global.GlobalFunction.BatteryBudgetResult
 
 class BatteryBudgetChartView @JvmOverloads constructor(
@@ -15,46 +18,49 @@ class BatteryBudgetChartView @JvmOverloads constructor(
     private var result: BatteryBudgetResult? = null
     private val path = Path()
 
-    // 예상 잔량 — #5A46FA
+    // 색은 테마 토큰에서 — 밤(values-night)·아침(values) 팔레트를 그대로 따름 (DESIGN.md)
+    private val accent = ContextCompat.getColor(context, R.color.informative_night)
+    private val reserve = ContextCompat.getColor(context, R.color.informative_negative)
+
+    // 예상 잔량 — 강조색 선 + 위에서 아래로 옅어지는 면 (넓은 채도 면 금지)
     private val forecastFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(130, 90, 70, 250)
         style = Paint.Style.FILL
     }
     private val forecastLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(90, 70, 250)
+        color = accent
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
     }
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(90, 70, 250)
+        color = accent
         style = Paint.Style.FILL
     }
     private val pctLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(90, 70, 250)
+        color = accent
         typeface = Typeface.DEFAULT_BOLD
     }
 
-    // 집에 갈 몫 — #FE3D16
+    // 집에 갈 몫 — 경고색, 면은 옅게
     private val reserveFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(90, 254, 61, 22)
+        color = ColorUtils.setAlphaComponent(reserve, 36)
         style = Paint.Style.FILL
     }
     private val reserveLinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(254, 61, 22)
+        color = reserve
         style = Paint.Style.STROKE
     }
     private val reserveLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(254, 61, 22)
+        color = reserve
         typeface = Typeface.DEFAULT_BOLD
         textAlign = Paint.Align.RIGHT
     }
     private val reserveBandTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.rgb(254, 61, 22)
+        color = reserve
     }
 
-    // 시간 레이블 — text_tertiary rgba(19,20,23,0.64)
+    // 시간 레이블 — text_tertiary
     private val timeLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.argb(163, 19, 20, 23)
+        color = ContextCompat.getColor(context, R.color.text_tertiary)
     }
 
     init {
@@ -98,22 +104,31 @@ class BatteryBudgetChartView @JvmOverloads constructor(
         val yRange = (yMax - yMin).coerceAtLeast(1)
 
         fun pctY(pct: Int) = cBottom - ((pct - yMin) / yRange.toFloat()) * cH
+        fun pctYd(pct: Double) = cBottom - ((pct - yMin) / yRange).toFloat() * cH
+        fun xAt(f: Double) = cLeft + (cRight - cLeft) * f.toFloat()
+
+        // 밤사이 곡선 (예보로 새벽에 추워지면 뒤로 갈수록 가파름). 없으면 시작~아침 직선
+        val curveX = r.curveX?.takeIf { it.size >= 2 } ?: doubleArrayOf(0.0, 1.0)
+        val curveY = r.curveY?.takeIf { it.size == curveX.size }
+            ?: doubleArrayOf(r.currentPct.toDouble(), r.morningPct.toDouble())
 
         val startY = pctY(r.currentPct)
-        val endY   = pctY(r.morningPct)
+        val endY   = pctYd(curveY.last())
         val reserveY = pctY(r.reservePct)
 
         // 1. reserve 영역 채우기 (차트 바닥 ~ reserve선)
         canvas.drawRect(cLeft, reserveY, cRight, cBottom, reserveFillPaint)
 
-        // 2. 예상 잔량 영역 채우기 (reserve선 ~ 배터리 라인)
-        val fillEndY = endY.coerceAtMost(reserveY)
+        // 2. 예상 잔량 영역 채우기 (reserve선 ~ 배터리 곡선)
         path.reset()
         path.moveTo(cLeft, startY)
-        path.lineTo(cRight, fillEndY)
+        for (i in 1 until curveX.size) path.lineTo(xAt(curveX[i]), pctYd(curveY[i]).coerceAtMost(reserveY))
         path.lineTo(cRight, reserveY)
         path.lineTo(cLeft, reserveY)
         path.close()
+        forecastFillPaint.shader = LinearGradient(0f, minOf(startY, endY), 0f, reserveY,
+            ColorUtils.setAlphaComponent(accent, 72), ColorUtils.setAlphaComponent(accent, 8),
+            Shader.TileMode.CLAMP)
         canvas.drawPath(path, forecastFillPaint)
 
         // 3. reserve 선
@@ -122,11 +137,16 @@ class BatteryBudgetChartView @JvmOverloads constructor(
         // 4. reserve 밴드 텍스트
         val marginPct = r.reservePct - r.neededForHomePct
         val source = if (r.neededFromNavi) "(내비 예측)" else ""
-        val bandText = "집까지 ${r.neededForHomePct}%$source + 여유 ${marginPct}%  ·  이 아래는 쓰지 않아요"
+        val bandText = "도착까지 ${r.neededForHomePct}%$source + 남길 ${marginPct}%  ·  이 아래는 쓰지 않아요"
         canvas.drawText(bandText, cLeft + 10f * d, reserveY + 18f * s, reserveBandTextPaint)
 
-        // 5. 배터리 라인
-        canvas.drawLine(cLeft, startY, cRight, endY, forecastLinePaint)
+        // 5. 배터리 곡선
+        path.reset()
+        path.moveTo(cLeft, startY)
+        for (i in 1 until curveX.size) path.lineTo(xAt(curveX[i]), pctYd(curveY[i]))
+        forecastLinePaint.style = Paint.Style.STROKE
+        forecastLinePaint.strokeJoin = Paint.Join.ROUND
+        canvas.drawPath(path, forecastLinePaint)
 
         // 6. 시작·끝 도트
         val dotR = 7f * d

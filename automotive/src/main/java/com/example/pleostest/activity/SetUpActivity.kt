@@ -9,20 +9,18 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.RadioGroup
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.pleostest.R
-import com.example.pleostest.db.SleepDatabase
-import com.example.pleostest.db.SleepRecord
 import com.example.pleostest.dialog.DestinationSearchDialog
 import com.example.pleostest.dialog.GcTimePickerDialog
 import com.example.pleostest.global.GlobalFunction
 import com.example.pleostest.global.GlobalVariables
 import com.example.pleostest.sdk.LocationManager
 import com.example.pleostest.sdk.NaviManager
+import com.example.pleostest.sdk.WeatherForecast
 import com.example.pleostest.service.CarDataService
 import com.example.pleostest.util.GNCLog
 
@@ -110,7 +108,6 @@ class SetUpActivity : BaseActivity() {
             refreshVehicleStats()
         }
         updateDestinationRow()   // 밤 계획에서 내비 예측으로 목적지·거리가 바뀌었을 수 있음
-        loadSleepRecords()
         refreshHeaderLocation()
     }
 
@@ -130,27 +127,12 @@ class SetUpActivity : BaseActivity() {
         headerView().findViewById<TextView>(R.id.gc_header_subtitle).text =
             getString(R.string.gc_setup_subtitle)
 
-        //thread 돌려서 데이터를 집어 넣어줘여하는데
-        // 배터리 지표
-        GlobalFunction.setStatItem(
-            findViewById(R.id.gc_stat_battery),
-            GlobalFunction.batteryValueStr(),
-            "%",
-            getString(R.string.gc_label_battery)
-        )
-
-        // 바깥 온도 지표
-        GlobalFunction.setStatItem(
-            findViewById(R.id.gc_stat_outside),
-            GlobalFunction.temperatureValueStr(),
-            "°C",
-            getString(R.string.gc_label_outside)
-        )
+        // 지금 차 상태: 실내 · 바깥 온도 (CarDataService가 갱신하면 refreshVehicleStats로 다시 그림)
+        refreshVehicleStats()
 
         // 오늘 밤 설정 행들
         updateWakeTimeDisplay()
         updateDestinationRow()
-        updateTemperatureDisplay()
         updateReserveDisplay()
         updateGuestsDisplay()
     }
@@ -161,11 +143,11 @@ class SetUpActivity : BaseActivity() {
 
     private fun setupListeners() {
 
-        // 일어날 시간 — 행 탭 시 TimePicker
-        findViewById<LinearLayout>(R.id.gc_row_wake_time).setOnClickListener { showWakeTimePicker() }
+        // 내일 아침 카드 탭 → TimePicker
+        findViewById<View>(R.id.gc_row_wake_time).setOnClickListener { showWakeTimePicker() }
 
-        // 목적지 변경 → 검색 다이얼로그
-        findViewById<TextView>(R.id.gc_destination_change).setOnClickListener {
+        // 내일 갈 곳 타일 탭 → 검색 다이얼로그
+        findViewById<View>(R.id.gc_destination_change).setOnClickListener {
             GNCLog.i("[SetUpActivity] 목적지 변경 버튼 탭")
             DestinationSearchDialog(this) { name, km, lat, lng ->
                 GNCLog.i("[SetUpActivity] 목적지 선택 완료 → name=$name, km=$km (이전: ${GlobalVariables.destinationName})")
@@ -177,27 +159,24 @@ class SetUpActivity : BaseActivity() {
             }.show()
         }
 
-        // 원하는 온도 ±1°C
-        findViewById<ImageButton>(R.id.gc_temperature_minus).setOnClickListener { adjustTemperature(-1) }
-        findViewById<ImageButton>(R.id.gc_temperature_plus).setOnClickListener { adjustTemperature(+1) }
-
-        // 여유 배터리 세그먼트
-        findViewById<RadioGroup>(R.id.gc_reserve_segment).setOnCheckedChangeListener { _, checkedId ->
-            val old = GlobalVariables.marginBatteryPct
-            GlobalVariables.marginBatteryPct = when (checkedId) {
-                R.id.gc_reserve_5 -> 5
-                R.id.gc_reserve_15 -> 15
-                else -> 10
+        // 도착할 때 남길 배터리 — 다음 목적지가 집이 아닐 수도 있어 5~50% 자유롭게
+        findViewById<SeekBar>(R.id.gc_reserve_slider).setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(bar: SeekBar, progress: Int, fromUser: Boolean) {
+                if (!fromUser) return
+                GlobalVariables.marginBatteryPct = progress
+                updateReserveDisplay()
             }
-            GNCLog.i("[SetUpActivity] 여유 배터리 변경: ${old}% → ${GlobalVariables.marginBatteryPct}%")
-            updateReserveDisplay()
-        }
+            override fun onStartTrackingTouch(bar: SeekBar) = Unit
+            override fun onStopTrackingTouch(bar: SeekBar) {
+                GNCLog.i("[SetUpActivity] 남길 배터리 변경 → ${GlobalVariables.marginBatteryPct}%")
+            }
+        })
 
         // 자는 인원 ±1명 (최소 1명)
         findViewById<ImageButton>(R.id.gc_guests_minus).setOnClickListener { adjustGuests(-1) }
         findViewById<ImageButton>(R.id.gc_guests_plus).setOnClickListener { adjustGuests(+1) }
 
-        // 밤 계획 만들기
+        // 굿나잇 시작 → 밤 계획
         findViewById<TextView>(R.id.gc_action_make_plan).setOnClickListener {
             makePlan()
         }
@@ -218,13 +197,6 @@ class SetUpActivity : BaseActivity() {
             GlobalVariables.wakeTime = newTime
             updateWakeTimeDisplay()
         }.show()
-    }
-
-    private fun adjustTemperature(delta: Int) {
-        val old = GlobalVariables.setTemperatureDeg
-        GlobalVariables.setTemperatureDeg = (old + delta).coerceIn(16, 28)
-        GNCLog.i("[SetUpActivity] 온도 조정 ${if (delta > 0) "+" else ""}$delta°C: ${old}°C → ${GlobalVariables.setTemperatureDeg}°C")
-        updateTemperatureDisplay()
     }
 
     private fun adjustGuests(delta: Int) {
@@ -252,30 +224,21 @@ class SetUpActivity : BaseActivity() {
             if (km > 0) "$km ${getString(R.string.gc_unit_km)}" else ""
     }
 
-    private fun updateTemperatureDisplay() {
-        val deg = GlobalVariables.setTemperatureDeg
-        findViewById<TextView>(R.id.gc_temperature_value).text =
-            "$deg°C"
-    }
-
     private fun updateGuestsDisplay() {
         findViewById<TextView>(R.id.gc_guests_value).text =
             GlobalVariables.guestCount.toString()
     }
 
     private fun updateReserveDisplay() {
-        val pct = GlobalVariables.marginBatteryPct
-        findViewById<TextView>(R.id.gc_reserve_value).text =
-            "$pct%"
-
-        // 세그먼트 UI를 현재 값에 동기화 (리스너 루프 방지용 조건 체크)
-        val seg = findViewById<RadioGroup>(R.id.gc_reserve_segment)
-        val targetId = when (pct) {
-            5 -> R.id.gc_reserve_5
-            15 -> R.id.gc_reserve_15
-            else -> R.id.gc_reserve_10
-        }
-        if (seg.checkedRadioButtonId != targetId) seg.check(targetId)
+        val pct = GlobalVariables.marginBatteryPct.coerceIn(RESERVE_MIN, RESERVE_MAX)
+        findViewById<TextView>(R.id.gc_reserve_value).text = "$pct%"
+        findViewById<TextView>(R.id.gc_reserve_hint).setText(when {
+            pct < 8 -> R.string.gc_reserve_hint_low
+            pct < 20 -> R.string.gc_reserve_hint_mid
+            else -> R.string.gc_reserve_hint_high
+        })
+        val slider = findViewById<SeekBar>(R.id.gc_reserve_slider)
+        if (slider.progress != pct) slider.progress = pct
     }
 
     // ────────────────────────────────────────────────────────────────
@@ -284,91 +247,8 @@ class SetUpActivity : BaseActivity() {
 
     private fun makePlan() {
         GNCLog.i("[SetUpActivity] 밤 계획 만들기 → PlanActivity 이동")
-        GNCLog.i("[SetUpActivity] 현재 설정: wakeTime=${GlobalVariables.wakeTime}, temp=${GlobalVariables.setTemperatureDeg}°C, guests=${GlobalVariables.guestCount}명, reserve=${GlobalVariables.marginBatteryPct}%, dest=${GlobalVariables.destinationName}(${GlobalVariables.destinationDistanceKm}km)")
+        GNCLog.i("[SetUpActivity] 현재 설정: wakeTime=${GlobalVariables.wakeTime}, 차량 설정 온도=${GlobalVariables.setTemperatureDeg}°C, guests=${GlobalVariables.guestCount}명, reserve=${GlobalVariables.marginBatteryPct}%, dest=${GlobalVariables.destinationName}(${GlobalVariables.destinationDistanceKm}km)")
         startActivity(Intent(this, PlanActivity::class.java))
-    }
-
-    // ────────────────────────────────────────────────────────────────
-    // 최근 수면 기록
-    // ────────────────────────────────────────────────────────────────
-
-    private fun loadSleepRecords() {
-        GNCLog.d("[SetUpActivity] 수면 기록 DB 조회 시작")
-        val db = SleepDatabase.getInstance(this)
-        Thread {
-            val records = db.sleepRecordDao().getRecent()
-            GNCLog.i("[SetUpActivity] 수면 기록 조회 완료 — ${records.size}개")
-            records.forEachIndexed { i, r ->
-                GNCLog.d("[SetUpActivity] 기록[$i] dest=${r.destinationName}, wakeTime=${r.wakeTime}, temp=${r.setTemperatureDeg}°C, guests=${r.guestCount}명, createdAt=${r.createdAt}")
-            }
-            runOnUiThread { populateSleepRecords(records) }
-        }.start()
-    }
-
-    private fun populateSleepRecords(records: List<SleepRecord>) {
-        val scrollView = findViewById<View>(R.id.gc_sleep_records_scroll)
-        val container = findViewById<LinearLayout>(R.id.gc_sleep_records_container)
-        val emptyView = findViewById<TextView>(R.id.gc_sleep_records_empty)
-        container.removeAllViews()
-
-        if (records.isEmpty()) {
-            scrollView.visibility = View.GONE
-            emptyView.visibility = View.VISIBLE
-            return
-        }
-
-        scrollView.visibility = View.VISIBLE
-        emptyView.visibility = View.GONE
-
-        records.forEachIndexed { index, record ->
-            if (index > 0) {
-                val divider = View(this)
-                divider.setBackgroundColor(
-                    android.graphics.Color.parseColor("#1AFFFFFF"))
-                val divParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 2)
-                container.addView(divider, divParams)
-            }
-
-            val row = layoutInflater.inflate(R.layout.gc_item_sleep_record, container, false)
-
-            row.findViewById<TextView>(R.id.gc_record_destination).text = record.destinationName
-            row.findViewById<TextView>(R.id.gc_record_detail).text =
-                "기상 ${record.wakeTime}  ·  ${record.setTemperatureDeg}°C  ·  ${record.guestCount}명"
-
-            row.setOnClickListener { applyRecord(record) }
-
-            row.findViewById<View>(R.id.gc_record_delete).setOnClickListener {
-                GNCLog.i("[SetUpActivity] 수면 기록 삭제 요청 — id=${record.id}, dest=${record.destinationName}")
-                val db = SleepDatabase.getInstance(this)
-                Thread {
-                    db.sleepRecordDao().deleteById(record.id)
-                    GNCLog.i("[SetUpActivity] 수면 기록 삭제 완료 — id=${record.id}")
-                    runOnUiThread { loadSleepRecords() }
-                }.start()
-            }
-
-            container.addView(row)
-        }
-    }
-
-    private fun applyRecord(record: SleepRecord) {
-        GNCLog.i("[SetUpActivity] 수면 기록 적용 — id=${record.id}, dest=${record.destinationName}, wakeTime=${record.wakeTime}, temp=${record.setTemperatureDeg}°C, guests=${record.guestCount}명, reserve=${record.marginBatteryPct}%")
-        GlobalVariables.destinationName = record.destinationName
-        GlobalVariables.destinationDistanceKm = record.destinationDistanceKm
-        GlobalVariables.destinationLat = record.destinationLat
-        GlobalVariables.destinationLng = record.destinationLng
-        GlobalVariables.wakeTime = record.wakeTime
-        GlobalVariables.setTemperatureDeg = record.setTemperatureDeg
-        GlobalVariables.marginBatteryPct = record.marginBatteryPct
-        GlobalVariables.guestCount = record.guestCount
-        // 설정 행 갱신
-        updateWakeTimeDisplay()
-        updateDestinationRow()
-        updateTemperatureDisplay()
-        updateReserveDisplay()
-        updateGuestsDisplay()
-        GNCLog.d("[SetUpActivity] 기록 적용 후 UI 갱신 완료")
     }
 
     private fun startLocationUpdates() {
@@ -377,6 +257,8 @@ class SetUpActivity : BaseActivity() {
             onLocation = { loc ->
                 GlobalVariables.currentLat = loc.latitude
                 GlobalVariables.currentLng = loc.longitude
+                // 밤 계획에 쓸 시간별 기온 예보를 미리 받아 둠 (1시간 캐시)
+                WeatherForecast.fetch(loc.latitude, loc.longitude) { }
                 locationManager.reverseGeocode(loc.latitude, loc.longitude) { name ->
                     GlobalVariables.locationName = name
                     runOnUiThread { updateLocationDisplay(name) }
@@ -391,12 +273,12 @@ class SetUpActivity : BaseActivity() {
     }
 
     private fun refreshVehicleStats() {
-        GNCLog.d("[SetUpActivity] 차량 지표 갱신 — battery=${GlobalVariables.curBattery}, temp=${GlobalVariables.outTemperature}")
+        GNCLog.d("[SetUpActivity] 차량 지표 갱신 — 실내=${GlobalVariables.cabinTemperature}, 바깥=${GlobalVariables.outTemperature}")
         GlobalFunction.setStatItem(
-            findViewById(R.id.gc_stat_battery),
-            GlobalFunction.batteryValueStr(),
-            "%",
-            getString(R.string.gc_label_battery)
+            findViewById(R.id.gc_stat_cabin),
+            GlobalVariables.cabinTemperature.removeSuffix("°C"),
+            "°C",
+            getString(R.string.gc_label_cabin)
         )
         GlobalFunction.setStatItem(
             findViewById(R.id.gc_stat_outside),
@@ -407,4 +289,9 @@ class SetUpActivity : BaseActivity() {
     }
 
     private fun headerView(): View = findViewById(R.id.gc_header)
+
+    companion object {
+        private const val RESERVE_MIN = 5
+        private const val RESERVE_MAX = 50
+    }
 }
